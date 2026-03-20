@@ -1,0 +1,220 @@
+/* ── uOttawa Course Map · Shared Styles ─────────────────────────────────── */
+
+:root {
+  --bg:         #f7f5f0;
+  --border:     #ddd8ce;
+  --text:       #2d2a24;
+  --muted:      #8c8578;
+  --accent:     #7b68ee;
+  --prereq:     #e85d7a;
+  --unlocks:    #3db891;
+  --selected:   #d4960a;
+  --panel-bg:   rgba(253,252,250,0.97);
+  --legend-bg:  rgba(253,252,250,0.95);
+  --header-bg:  rgba(247,245,240,0.98);
+  --nav-h:      48px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+}
+
+/* ── NAV ──────────────────────────────────────────────────────────────────── */
+#nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: var(--nav-h);
+  z-index: 200;
+  background: var(--header-bg);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  gap: 6px;
+  box-shadow: 0 1px 8px rgba(0,0,0,0.06);
+}
+
+#nav .brand {
+  font-family: 'Space Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-right: 12px;
+  white-space: nowrap;
+}
+
+#nav .divider {
+  width: 1px;
+  height: 20px;
+  background: var(--border);
+  margin: 0 6px;
+}
+
+.nav-tab {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 13px;
+  border-radius: 7px;
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .05em;
+  text-decoration: none;
+  color: var(--muted);
+  transition: background .15s, color .15s;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.nav-tab:hover {
+  background: rgba(0,0,0,0.04);
+  color: var(--text);
+}
+
+.nav-tab.active {
+  color: var(--text);
+  border-color: var(--border);
+  background: rgba(255,255,255,0.8);
+}
+
+.nav-tab .dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.nav-tab.coming-soon {
+  opacity: 0.4;
+  cursor: default;
+  pointer-events: none;
+}
+
+#nav .hint-text {
+  margin-left: auto;
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+}
+
+/* ── INFO PANEL ───────────────────────────────────────────────────────────── */
+#info-panel {
+  position: fixed;
+  top: calc(var(--nav-h) + 12px);
+  right: 24px;
+  width: 285px;
+  z-index: 100;
+  background: var(--panel-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px;
+  font-size: 12px;
+  display: none;
+  max-height: calc(100vh - var(--nav-h) - 36px);
+  overflow-y: auto;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.09);
+}
+
+#info-panel.visible { display: block; }
+
+#info-panel h2 {
+  font-family: 'Space Mono', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--selected);
+  margin-bottom: 4px;
+}
+
+.course-name {
+  color: var(--text);
+  font-size: 11px;
+  margin-bottom: 12px;
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+.section-title {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  margin-bottom: 6px;
+  margin-top: 12px;
+}
+
+.section-prereq { color: var(--prereq); }
+.section-unlock  { color: var(--unlocks); }
+
+.chip-list { display: flex; flex-wrap: wrap; gap: 5px; }
+
+.chip {
+  padding: 3px 8px;
+  border-radius: 5px;
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  cursor: pointer;
+  transition: opacity .15s, transform .1s;
+}
+.chip:hover { opacity: .75; transform: translateY(-1px); }
+.chip-prereq { background: rgba(232,93,122,.1); color: var(--prereq); border: 1px solid rgba(232,93,122,.3); }
+.chip-unlock  { background: rgba(61,184,145,.1);  color: var(--unlocks); border: 1px solid rgba(61,184,145,.3); }
+
+.description {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.6;
+  margin-top: 10px;
+}
+
+/* ── LEGEND ───────────────────────────────────────────────────────────────── */
+#legend {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--legend-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  box-shadow: 0 2px 14px rgba(0,0,0,0.07);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--muted);
+  font-family: 'Space Mono', monospace;
+}
+
+.legend-dot  { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.legend-line { width: 24px; height: 2px; border-radius: 2px; flex-shrink: 0; }
+
+/* ── HINT ─────────────────────────────────────────────────────────────────── */
+#hint {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+  text-align: right;
+  line-height: 1.8;
+}
+
+/* ── CANVAS ───────────────────────────────────────────────────────────────── */
+canvas { display: block; cursor: grab; }
+canvas:active { cursor: grabbing; }

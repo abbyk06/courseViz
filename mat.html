@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>uOttawa · MAT Course Map</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ── Navigation (built by nav.js) ─────────────────────────────────────── -->
+<nav id="nav"></nav>
+
+<!-- ── Side panel ───────────────────────────────────────────────────────── -->
+<div id="info-panel">
+  <h2 id="panel-code"></h2>
+  <div class="course-name" id="panel-name"></div>
+  <div id="panel-prereq-section" style="display:none">
+    <div class="section-title section-prereq">▲ Prerequisites</div>
+    <div class="chip-list" id="panel-prereqs"></div>
+  </div>
+  <div id="panel-unlock-section" style="display:none">
+    <div class="section-title section-unlock">▼ Unlocks</div>
+    <div class="chip-list" id="panel-unlocks"></div>
+  </div>
+  <div class="description" id="panel-desc"></div>
+</div>
+
+<!-- ── Legend ───────────────────────────────────────────────────────────── -->
+<div id="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#d4960a"></div> Selected</div>
+  <div class="legend-item"><div class="legend-line" style="background:#e85d7a"></div> Prerequisite of</div>
+  <div class="legend-item"><div class="legend-line" style="background:#3db891"></div> Unlocks access to</div>
+</div>
+
+<div id="hint">Scroll to zoom · Drag to pan<br>Click node to inspect</div>
+
+<!-- ── Canvas ───────────────────────────────────────────────────────────── -->
+<canvas id="cv"></canvas>
+
+<!-- ── Shared nav ───────────────────────────────────────────────────────── -->
+<script src="nav.js"></script>
+
+<script>
+// ── Course data ─────────────────────────────────────────────────────────────
+const COURSES = {
+  // 1000 level
+  "MAT1300": { name: "Mathematical Methods I",          desc: "Review of elementary functions, limits, differential & integral calculus in one variable, partial derivatives.", prereqs: [], level: 1000 },
+  "MAT1302": { name: "Mathematical Methods II",         desc: "Systems of linear equations, matrix algebra, determinants, eigenvalues, vector spaces.", prereqs: [], level: 1000 },
+  "MAT1308": { name: "Introduction to Calculus",        desc: "Intro to limits, differential and integral calculus in one variable. For Arts/Social Sciences.", prereqs: [], level: 1000 },
+  "MAT1318": { name: "Functions",                       desc: "Polynomial, rational, logarithmic, exponential and trigonometric functions. Upgrading course.", prereqs: [], level: 1000 },
+  "MAT1320": { name: "Calculus I",                      desc: "Limits, derivatives, integration, fundamental theorem of calculus, techniques of integration.", prereqs: ["MAT1339"], level: 1000 },
+  "MAT1321": { name: "Foundations of Calculus I",       desc: "Derivatives from limits, analysis of functions, the definite integral, numerical integration.", prereqs: ["MAT1318"], level: 1000 },
+  "MAT1322": { name: "Calculus II",                     desc: "Improper integrals, applications, separable DEs, sequences, series, Taylor series, partial derivatives.", prereqs: ["MAT1320","MAT1321"], level: 1000 },
+  "MAT1327": { name: "Foundations Calc Life Sci I",     desc: "Derivatives, integrals, discrete dynamical systems with life sciences applications.", prereqs: ["MAT1318"], level: 1000 },
+  "MAT1329": { name: "Foundations Math Methods I",      desc: "Derivatives, optimization, geometric series, integral calculus, partial derivatives.", prereqs: ["MAT1318"], level: 1000 },
+  "MAT1330": { name: "Calculus Life Sciences I",        desc: "Derivatives, curve sketching, discrete dynamical systems, integrals with life sciences applications.", prereqs: ["MAT1339"], level: 1000 },
+  "MAT1332": { name: "Calculus Life Sciences II",       desc: "Numerical integration, differential equations, linear algebra, phase portraits.", prereqs: ["MAT1320","MAT1321","MAT1327","MAT1330"], level: 1000 },
+  "MAT1339": { name: "Intro Calculus & Vectors",        desc: "Derivatives, vectors, dot/cross products, equations of lines and planes. Upgrading/admission course.", prereqs: ["MAT1318"], level: 1000 },
+  "MAT1341": { name: "Intro to Linear Algebra",         desc: "Complex numbers, vector spaces, linear independence, eigenvalues, linear transformations.", prereqs: ["MAT1339"], level: 1000 },
+  "MAT1348": { name: "Discrete Math for Computing",     desc: "Logic, functions, relations, counting, proofs, graph theory. Foundation for computing.", prereqs: ["MAT1318"], level: 1000 },
+  "MAT1362": { name: "Mathematical Reasoning & Proofs", desc: "Logic, set theory, functions, proof techniques, real line, sequences and limits.", prereqs: ["MAT1339"], level: 1000 },
+  "MAT1372": { name: "Probability & Stat Inference",    desc: "Probability distributions, CLT, sampling, hypothesis testing, regression.", prereqs: [], level: 1000 },
+  "MAT1395": { name: "The Beauty of Mathematics",       desc: "Selected topics from modern and ancient mathematics (content varies yearly).", prereqs: [], level: 1000 },
+  // 2000 level
+  "MAT2122": { name: "Multivariable Calculus",          desc: "Chain rule, Taylor's theorem, implicit function theorem, Lagrange multipliers, Green's/Stokes'/Gauss's theorems.", prereqs: ["MAT1322","MAT1341"], level: 2000 },
+  "MAT2125": { name: "Elementary Real Analysis",        desc: "Completeness, topology of Rn, Riemann integral, sequences and series of functions, Fourier series.", prereqs: ["MAT1322","MAT1348","MAT1362"], level: 2000 },
+  "MAT2141": { name: "Honours Linear Algebra",          desc: "Vector spaces, linear maps, dual spaces, determinants, orthogonal projections, diagonalization. Proof-based.", prereqs: ["MAT1341","MAT1348","MAT1362"], level: 2000 },
+  "MAT2143": { name: "Intro to Group Theory",           desc: "Groups, cosets, Lagrange's theorem, normal subgroups, homomorphisms, isomorphism theorems.", prereqs: ["MAT1341","MAT1348","MAT1362"], level: 2000 },
+  "MAT2322": { name: "Calculus III for Engineers",      desc: "Extrema, multiple integration, vector fields, line integrals, Stokes/Gauss theorems.", prereqs: ["MAT1322","MAT1341"], level: 2000 },
+  "MAT2324": { name: "ODEs & Laplace Transform",        desc: "First order equations, higher order linear DEs, Laplace transforms, systems of DEs, series solutions.", prereqs: ["MAT1341","MAT1322"], level: 2000 },
+  "MAT2335": { name: "Intro to Numerical Methods",      desc: "Floating point errors, nonlinear equations, interpolation, numerical differentiation and integration.", prereqs: ["MAT1322","MAT1341"], level: 2000 },
+  "MAT2342": { name: "Intro Applied Linear Algebra",    desc: "Inner products, SVD, eigenvalues, quadratic forms, least squares, PCA, linear programming.", prereqs: ["MAT1302","MAT1341"], level: 2000 },
+  "MAT2348": { name: "Discrete Mathematics",            desc: "Recurrence relations, generating functions, inclusion-exclusion, graph theory.", prereqs: ["MAT1341","MAT1348","MAT1362"], level: 2000 },
+  "MAT2355": { name: "Intro to Geometry",               desc: "Euclidean and non-Euclidean geometries, affine, projective geometry, transformation groups.", prereqs: ["MAT1302","MAT1341"], level: 2000 },
+  "MAT2362": { name: "Foundations of Mathematics",      desc: "Axiomatic set theory, ordinals, axiom of choice, Zorn's lemma, cardinality, Cantor's diagonal argument.", prereqs: ["MAT1348","MAT1362"], level: 2000 },
+  "MAT2371": { name: "Intro to Probability",            desc: "Probability axioms, random variables, moments, weak law of large numbers, central limit theorem.", prereqs: ["MAT1322"], level: 2000 },
+  "MAT2384": { name: "ODEs & Numerical Methods",        desc: "DEs + numerical methods including error analysis, numerical differentiation and integration.", prereqs: ["MAT1341","MAT1322"], level: 2000 },
+  // 3000 level
+  "MAT3100": { name: "History of Mathematics I",        desc: "Mathematical development from Babylonians and Greeks to modern times.", prereqs: [], level: 3000 },
+  "MAT3101": { name: "History of Mathematics II",       desc: "Historical development through themes: counting, space, randomness, the infinitely small.", prereqs: [], level: 3000 },
+  "MAT3120": { name: "Real Analysis",                   desc: "Metric spaces, compactness, Banach fixed point, Arzéla-Ascoli, Hilbert/Banach spaces, Fourier series.", prereqs: ["MAT2122","MAT2125"], level: 3000 },
+  "MAT3121": { name: "Complex Analysis",                desc: "Analytic functions, integration, Laurent series, residue calculus, conformal mappings.", prereqs: ["MAT2122","MAT2125"], level: 3000 },
+  "MAT3130": { name: "Intro to Dynamical Systems",      desc: "Linear and nonlinear systems of DEs, stability, invariant manifolds, periodic orbits.", prereqs: ["MAT2122","MAT2125","MAT2141","MAT2342","MAT2324","MAT2384"], level: 3000 },
+  "MAT3143": { name: "Rings and Modules",               desc: "Rings, ideals, PIDs, polynomial rings, finite fields, modules, classification over PID.", prereqs: ["MAT2141","MAT2143"], level: 3000 },
+  "MAT3153": { name: "Intro to Topology",               desc: "Topology of Rn, compactness, connectedness, homotopies, winding number, classification of surfaces.", prereqs: ["MAT2122","MAT2125"], level: 3000 },
+  "MAT3155": { name: "Intro Differential Geometry",     desc: "Elementary Riemannian geometry, curves, surfaces, applications to geometry and physics.", prereqs: ["MAT2122","MAT2125","MAT2141","MAT2342"], level: 3000 },
+  "MAT3166": { name: "Intro to Number Theory",          desc: "Fermat-Euler-Wilson theorems, Diophantine equations, continued fractions, distribution of primes.", prereqs: ["MAT2143","MAT2348"], level: 3000 },
+  "MAT3172": { name: "Foundations of Probability",      desc: "Random vectors, conditional expectation, functions of random variables, convergence theorems.", prereqs: ["MAT2371","MAT2122","MAT2141","MAT2342"], level: 3000 },
+  "MAT3320": { name: "Mathematics for Engineers",       desc: "Series solutions, Legendre/Bessel functions, Sturm-Liouville, Fourier series, PDEs.", prereqs: ["MAT2122","MAT2322","MAT2324","MAT2384"], level: 3000 },
+  "MAT3335": { name: "Numerical Methods for DEs",       desc: "ODE/PDE numerical methods, finite differences, stability, iterative solvers, FEM.", prereqs: ["MAT2122","MAT2125","MAT2335","MAT2141","MAT2342","MAT2324","MAT2384"], level: 3000 },
+  "MAT3341": { name: "Applied Linear Algebra",          desc: "Matrix norms, Schur form, QR/LU/SVD decompositions, Jordan form, Cayley-Hamilton, Gershgorin.", prereqs: ["MAT1322","MAT2141","MAT2342"], level: 3000 },
+  "MAT3343": { name: "Applied Algebra",                 desc: "Groups, finite fields, binary codes, Hamming and BCH codes.", prereqs: ["MAT2141","MAT2342","MAT2143","MAT2348"], level: 3000 },
+  "MAT3348": { name: "Applied Graph Theory",            desc: "Trees, graphs, networks and flows, matching theory, graph algorithms.", prereqs: ["MAT1341","MAT2348"], level: 3000 },
+  "MAT3361": { name: "Intro Mathematical Logic",        desc: "Propositional and predicate logic, formal proof systems, completeness, compactness.", prereqs: ["MAT2362","MAT2125","MAT2141","MAT2143","MAT2348"], level: 3000 },
+  "MAT3373": { name: "Methods of Machine Learning",     desc: "Linear/logistic regression, regularization, Bayesian methods, cross-validation, PCA, clustering.", prereqs: ["MAT1341","MAT2371"], level: 3000 },
+  "MAT3377": { name: "Sampling and Surveys",            desc: "Survey design: simple random, stratified, cluster, multi-stage sampling.", prereqs: ["MAT2371"], level: 3000 },
+  "MAT3395": { name: "Intro Mathematical Models",       desc: "Modelling using calculus, DEs, linear algebra, and vector geometry.", prereqs: ["MAT2141","MAT2342","MAT2122","MAT2322","MAT2324","MAT2384"], level: 3000 },
+  // 4000 level
+  "MAT4124": { name: "Intro Functional Analysis",       desc: "Banach and Hilbert spaces, Fourier series/transforms, linear operators, spectral theory.", prereqs: ["MAT3120"], level: 4000 },
+  "MAT4125": { name: "Measure and Integration I",       desc: "General measure and integral, Lebesgue measure on ℝ, Fubini's theorem, Lp-spaces.", prereqs: ["MAT3120"], level: 4000 },
+  "MAT4128": { name: "Intro Stochastic Processes",      desc: "Conditional expectation, Markov chains, Poisson process, Brownian motion.", prereqs: ["MAT3172","MAT3120"], level: 4000 },
+  "MAT4143": { name: "Galois Theory",                   desc: "Field extensions, splitting fields, Galois groups, solvability by radicals.", prereqs: ["MAT3143"], level: 4000 },
+  "MAT4145": { name: "Intro Algebraic Topology",        desc: "Fundamental group, covering spaces, singular homology, cohomology.", prereqs: ["MAT3143","MAT3153"], level: 4000 },
+  "MAT4150": { name: "Differential Topology",           desc: "Smooth manifolds, tangent bundles, differential forms, de Rham cohomology.", prereqs: ["MAT3120","MAT3153"], level: 4000 },
+  "MAT4160": { name: "Topics in Combinatorics",         desc: "Advanced combinatorial methods, enumerative combinatorics, algebraic combinatorics.", prereqs: ["MAT2348","MAT3166"], level: 4000 },
+  "MAT4175": { name: "Mathematical Statistics",         desc: "Point estimation, MLE, sufficiency, hypothesis testing, confidence intervals, regression.", prereqs: ["MAT3172"], level: 4000 },
+};
+
+// ── Unlock map ──────────────────────────────────────────────────────────────
+const UNLOCKS = {};
+for (const code of Object.keys(COURSES)) UNLOCKS[code] = [];
+for (const [code, data] of Object.entries(COURSES))
+  for (const pre of data.prereqs)
+    if (COURSES[pre]) UNLOCKS[pre].push(code);
+
+// ── Pastel palette per level ────────────────────────────────────────────────
+const LV = {
+  1000: { strip:'rgba(172,160,240,0.07)', header:'#8878e0', nodeFill:'#edeafc', nodeBorder:'#c8c0f0', codeColor:'#5848b8', nameColor:'#8070cc' },
+  2000: { strip:'rgba(100,180,240,0.07)', header:'#5090d0', nodeFill:'#ddeef8', nodeBorder:'#98caee', codeColor:'#2868a8', nameColor:'#5890c8' },
+  3000: { strip:'rgba(80,210,170,0.07)',  header:'#38a880', nodeFill:'#d8f4ec', nodeBorder:'#80d8be', codeColor:'#1a7860', nameColor:'#40a880' },
+  4000: { strip:'rgba(240,130,170,0.07)', header:'#c85898', nodeFill:'#fce0ee', nodeBorder:'#f0a8cc', codeColor:'#a83878', nameColor:'#d06098' },
+};
+
+// ── Layout constants ────────────────────────────────────────────────────────
+const LEVEL_X = { 1000:130, 2000:470, 3000:810, 4000:1150 };
+const NODE_W=138, NODE_H=40, NODE_R=7, V_GAP=56, PAD=72;
+
+const byLevel = {1000:[],2000:[],3000:[],4000:[]};
+for (const [code,d] of Object.entries(COURSES)) byLevel[d.level].push(code);
+
+const positions = {};
+for (const [lv,codes] of Object.entries(byLevel))
+  codes.forEach((code,i) => { positions[code] = { x:LEVEL_X[lv], y:PAD+i*V_GAP }; });
+
+// ── Canvas init ─────────────────────────────────────────────────────────────
+const canvas = document.getElementById('cv');
+const ctx    = canvas.getContext('2d');
+const CANVAS_W = 1440;
+const maxN = Math.max(...Object.values(byLevel).map(a=>a.length));
+const NAV_H = 48; // matches --nav-h in CSS
+const CANVAS_H = PAD*2 + maxN*V_GAP + 20;
+canvas.width  = CANVAS_W;
+canvas.height = CANVAS_H;
+
+let sel = null;
+let transform = { x:0, y:0, scale:0.72 };
+let isDragging = false, dragStart = {}, panStart = {};
+
+function applyT() {
+  canvas.style.transform = `translate(${transform.x}px,${transform.y}px) scale(${transform.scale})`;
+  canvas.style.transformOrigin = '0 0';
+  canvas.style.marginTop = NAV_H + 'px';
+}
+
+function lerp(a,b,t) { return a+(b-a)*t; }
+
+function drawRR(x,y,w,h,r) {
+  ctx.beginPath();
+  ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y);
+  ctx.quadraticCurveTo(x+w,y,x+w,y+r); ctx.lineTo(x+w,y+h-r);
+  ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h); ctx.lineTo(x+r,y+h);
+  ctx.quadraticCurveTo(x,y+h,x,y+h-r); ctx.lineTo(x,y+r);
+  ctx.quadraticCurveTo(x,y,x+r,y); ctx.closePath();
+}
+
+// ── Render ──────────────────────────────────────────────────────────────────
+function render() {
+  ctx.clearRect(0,0,CANVAS_W,CANVAS_H);
+  ctx.fillStyle='#f7f5f0'; ctx.fillRect(0,0,CANVAS_W,CANVAS_H);
+
+  // Dot grid
+  ctx.fillStyle='rgba(0,0,0,0.045)';
+  for(let x=0;x<CANVAS_W;x+=28) for(let y=0;y<CANVAS_H;y+=28){
+    ctx.beginPath(); ctx.arc(x,y,1,0,Math.PI*2); ctx.fill();
+  }
+
+  // Column strips
+  for(const[lv,cx] of Object.entries(LEVEL_X)){
+    ctx.fillStyle=LV[lv].strip; ctx.fillRect(cx-105,0,210,CANVAS_H);
+  }
+
+  // Level pill headers
+  ctx.textAlign='center';
+  for(const[lv,cx] of Object.entries(LEVEL_X)){
+    const label=lv+' Level';
+    ctx.font='700 11px "Space Mono",monospace';
+    const tw=ctx.measureText(label).width, px=14, ph=22;
+    ctx.fillStyle=LV[lv].header+'28';
+    ctx.beginPath(); ctx.roundRect(cx-tw/2-px,13,tw+px*2,ph,ph/2); ctx.fill();
+    ctx.strokeStyle=LV[lv].header+'70'; ctx.lineWidth=1; ctx.stroke();
+    ctx.fillStyle=LV[lv].header; ctx.fillText(label,cx,28);
+    ctx.strokeStyle=LV[lv].header+'28'; ctx.lineWidth=1; ctx.setLineDash([4,7]);
+    ctx.beginPath(); ctx.moveTo(cx,44); ctx.lineTo(cx,CANVAS_H-10); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  const prereqSet = sel ? new Set(COURSES[sel].prereqs.filter(p=>COURSES[p])) : new Set();
+  const unlockSet = sel ? new Set(UNLOCKS[sel]) : new Set();
+
+  // Edges
+  for(const[code,d] of Object.entries(COURSES)){
+    for(const pre of d.prereqs){
+      if(!COURSES[pre]||!positions[pre]||!positions[code]) continue;
+      const p1=positions[pre], p2=positions[code];
+      const isPreH=sel===code&&prereqSet.has(pre);
+      const isUnH =sel===pre &&unlockSet.has(code);
+      const active=isPreH||isUnH;
+      ctx.globalAlpha=sel?(active?1:0.05):0.25;
+      const mx=lerp(p1.x+NODE_W/2,p2.x-NODE_W/2,0.5);
+      ctx.beginPath();
+      ctx.moveTo(p1.x+NODE_W/2,p1.y);
+      ctx.bezierCurveTo(mx,p1.y,mx,p2.y,p2.x-NODE_W/2,p2.y);
+      if(isPreH){ ctx.strokeStyle='#e85d7a'; ctx.lineWidth=2.5; ctx.shadowColor='#e85d7a'; ctx.shadowBlur=8; }
+      else if(isUnH){ ctx.strokeStyle='#3db891'; ctx.lineWidth=2.5; ctx.shadowColor='#3db891'; ctx.shadowBlur=8; }
+      else { ctx.strokeStyle='#bbb4c8'; ctx.lineWidth=1; ctx.shadowBlur=0; }
+      ctx.stroke(); ctx.shadowBlur=0;
+    }
+  }
+  ctx.globalAlpha=1;
+
+  // Nodes
+  for(const[code,d] of Object.entries(COURSES)){
+    const pos=positions[code]; if(!pos) continue;
+    const nx=pos.x-NODE_W/2, ny=pos.y-NODE_H/2, lv=d.level;
+    const isSel=code===sel, isPre=prereqSet.has(code), isUnl=unlockSet.has(code);
+    ctx.globalAlpha=sel&&!isSel&&!isPre&&!isUnl?0.25:1;
+    if(isSel)      {ctx.shadowColor='rgba(212,150,10,0.35)'; ctx.shadowBlur=18;}
+    else if(isPre) {ctx.shadowColor='rgba(232,93,122,0.28)'; ctx.shadowBlur=14;}
+    else if(isUnl) {ctx.shadowColor='rgba(61,184,145,0.26)'; ctx.shadowBlur=14;}
+    else           {ctx.shadowColor='rgba(0,0,0,0.07)';      ctx.shadowBlur=5; }
+    drawRR(nx,ny,NODE_W,NODE_H,NODE_R);
+    ctx.fillStyle=isSel?'#fff8e0':isPre?'#ffedf0':isUnl?'#e6faf4':LV[lv].nodeFill; ctx.fill();
+    ctx.lineWidth=isSel||isPre||isUnl?1.8:1;
+    ctx.strokeStyle=isSel?'#d4960a':isPre?'#e85d7a':isUnl?'#3db891':LV[lv].nodeBorder;
+    drawRR(nx,ny,NODE_W,NODE_H,NODE_R); ctx.stroke(); ctx.shadowBlur=0;
+    ctx.font='700 10px "Space Mono",monospace'; ctx.textAlign='center';
+    ctx.fillStyle=isSel?'#b07808':isPre?'#c03058':isUnl?'#1a7a60':LV[lv].codeColor;
+    ctx.fillText(code,pos.x,pos.y-5);
+    const short=d.name.length>19?d.name.slice(0,18)+'…':d.name;
+    ctx.font='400 9px "DM Sans",sans-serif';
+    ctx.fillStyle=isSel?'#c09020':isPre?'#d06070':isUnl?'#40a880':LV[lv].nameColor;
+    ctx.fillText(short,pos.x,pos.y+10);
+    ctx.globalAlpha=1;
+  }
+}
+
+// ── Events ──────────────────────────────────────────────────────────────────
+canvas.addEventListener('mousedown',e=>{
+  isDragging=false;
+  dragStart={x:e.clientX,y:e.clientY};
+  panStart={x:transform.x,y:transform.y};
+});
+canvas.addEventListener('mousemove',e=>{
+  if(!(e.buttons&1)) return;
+  const dx=e.clientX-dragStart.x, dy=e.clientY-dragStart.y;
+  if(Math.abs(dx)>3||Math.abs(dy)>3){
+    isDragging=true; transform.x=panStart.x+dx; transform.y=panStart.y+dy; applyT();
+  }
+});
+canvas.addEventListener('mouseup',e=>{
+  if(!isDragging){
+    const rect=canvas.getBoundingClientRect();
+    const sx=(e.clientX-rect.left)/transform.scale;
+    const sy=(e.clientY-rect.top)/transform.scale;
+    let hit=null;
+    for(const[code,pos] of Object.entries(positions)){
+      if(sx>=pos.x-NODE_W/2&&sx<=pos.x+NODE_W/2&&sy>=pos.y-NODE_H/2&&sy<=pos.y+NODE_H/2){hit=code;break;}
+    }
+    if(hit){ sel=sel===hit?null:hit; sel?showPanel(hit):hidePanel(); }
+    else { sel=null; hidePanel(); }
+    requestAnimationFrame(render);
+  }
+  isDragging=false;
+});
+canvas.addEventListener('wheel',e=>{
+  e.preventDefault();
+  const rect=canvas.getBoundingClientRect();
+  const cx=e.clientX-rect.left, cy=e.clientY-rect.top;
+  const f=e.deltaY<0?1.1:0.91;
+  const ns=Math.min(3,Math.max(0.25,transform.scale*f)), r=ns/transform.scale;
+  transform.x=cx-r*(cx-transform.x); transform.y=cy-r*(cy-transform.y); transform.scale=ns;
+  applyT();
+},{passive:false});
+
+// ── Panel ────────────────────────────────────────────────────────────────────
+function showPanel(code){
+  const d=COURSES[code];
+  document.getElementById('panel-code').textContent=code;
+  document.getElementById('panel-name').textContent=d.name;
+  document.getElementById('panel-desc').textContent=d.desc;
+  const preEl=document.getElementById('panel-prereq-section');
+  const prereqs=d.prereqs.filter(p=>COURSES[p]);
+  if(prereqs.length){
+    preEl.style.display='block';
+    document.getElementById('panel-prereqs').innerHTML=prereqs.map(p=>
+      `<span class="chip chip-prereq" onclick="selectCourse('${p}')">${p}</span>`).join('');
+  } else preEl.style.display='none';
+  const unlEl=document.getElementById('panel-unlock-section');
+  const unlocks=UNLOCKS[code]||[];
+  if(unlocks.length){
+    unlEl.style.display='block';
+    document.getElementById('panel-unlocks').innerHTML=unlocks.map(u=>
+      `<span class="chip chip-unlock" onclick="selectCourse('${u}')">${u}</span>`).join('');
+  } else unlEl.style.display='none';
+  document.getElementById('info-panel').classList.add('visible');
+}
+function hidePanel(){ document.getElementById('info-panel').classList.remove('visible'); }
+function selectCourse(code){
+  sel=code; showPanel(code);
+  const pos=positions[code];
+  if(pos){
+    transform.x=window.innerWidth/2 - pos.x*transform.scale;
+    transform.y=window.innerHeight/2 - pos.y*transform.scale;
+    applyT();
+  }
+  requestAnimationFrame(render);
+}
+
+// ── Boot ─────────────────────────────────────────────────────────────────────
+buildNav('mat');
+transform.x = (window.innerWidth - CANVAS_W*transform.scale) / 2;
+transform.y = NAV_H + 8;
+applyT();
+requestAnimationFrame(render);
+</script>
+</body>
+</html>

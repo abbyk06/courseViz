@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>uOttawa · CSI Course Map</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav id="nav"></nav>
+
+<div id="info-panel">
+  <h2 id="panel-code"></h2>
+  <div class="course-name" id="panel-name"></div>
+  <div id="panel-prereq-section" style="display:none">
+    <div class="section-title section-prereq">▲ Prerequisites</div>
+    <div class="chip-list" id="panel-prereqs"></div>
+  </div>
+  <div id="panel-unlock-section" style="display:none">
+    <div class="section-title section-unlock">▼ Unlocks</div>
+    <div class="chip-list" id="panel-unlocks"></div>
+  </div>
+  <div class="description" id="panel-desc"></div>
+</div>
+
+<div id="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#d4960a"></div> Selected</div>
+  <div class="legend-item"><div class="legend-line" style="background:#e85d7a"></div> Prerequisite of</div>
+  <div class="legend-item"><div class="legend-line" style="background:#3db891"></div> Unlocks access to</div>
+</div>
+
+<div id="hint">Scroll to zoom · Drag to pan<br>Click node to inspect</div>
+
+<canvas id="cv"></canvas>
+
+<script src="nav.js"></script>
+
+<script>
+// ── Course data ──────────────────────────────────────────────────────────────
+// Prereqs listed are CSI-only; MAT/ITI deps shown in description & panel
+// ITI prereqs (1121 etc.) are entry-level and not in this map — omitted from graph
+const COURSES = {
+
+  // ── 2000 level ────────────────────────────────────────────────────────────
+  "CSI2101": {
+    name: "Discrete Structures",
+    desc: "Predicate logic, proof techniques, induction, graph theory, program correctness, recurrence relations, integer properties and basic cryptography.",
+    prereqs: [],
+    level: 2000
+  },
+  "CSI2110": {
+    name: "Data Structures & Algorithms",
+    desc: "Abstract data types, complexity analysis, trees, search (balanced trees, hashing), sorting, graph algorithms, string matching.",
+    prereqs: ["CSI2101"],
+    level: 2000
+  },
+  "CSI2120": {
+    name: "Programming Paradigms",
+    desc: "Object-oriented, imperative, logic, and functional paradigms. Programming in multiple languages. Constraint-based, rule-based, and event-driven overviews.",
+    prereqs: ["CSI2110"],
+    level: 2000
+  },
+  "CSI2132": {
+    name: "Databases I",
+    desc: "Entity-Relationship modelling, relational algebra, SQL, embedded SQL, functional dependencies, normalization, physical database design. Team project.",
+    prereqs: ["CSI2110"],
+    level: 2000
+  },
+  "CSI2372": {
+    name: "Advanced Programming in C++",
+    desc: "C++ vs Java, pointers, memory management, OOP in C++, file I/O, templates and STL, numerical computation, hardware interfacing.",
+    prereqs: [],
+    level: 2000
+  },
+
+  // ── 3000 level ────────────────────────────────────────────────────────────
+  "CSI3104": {
+    name: "Intro to Formal Languages",
+    desc: "Regular languages, finite automata, Kleene's theorem, context-free languages, pushdown automata, decidability, Turing machines, halting problem.",
+    prereqs: ["CSI2101"],
+    level: 3000
+  },
+  "CSI3105": {
+    name: "Design & Analysis of Algorithms I",
+    desc: "Worst-case & complexity analysis, asymptotic notation. Brute force, divide & conquer, dynamic programming, greedy, backtracking. P, NP, NP-complete.",
+    prereqs: ["CSI2110", "CSI2101"],
+    level: 3000
+  },
+  "CSI3120": {
+    name: "Programming Language Concepts",
+    desc: "Design criteria for languages, syntactic & semantic description, scripting languages, data types, control structures, subprograms, concurrency basics.",
+    prereqs: ["CSI2101", "CSI2120"],
+    level: 3000
+  },
+  "CSI3130": {
+    name: "Databases II",
+    desc: "Advanced physical DB design, query processing & optimization, transaction processing, concurrency control, OO databases, distributed DBs, data warehousing.",
+    prereqs: ["CSI2132"],
+    level: 3000
+  },
+  "CSI3131": {
+    name: "Operating Systems",
+    desc: "Process management, scheduling, concurrency, CPU scheduling, memory management, virtual memory, mass storage, I/O, file systems, security.",
+    prereqs: ["CSI2110"],
+    level: 3000
+  },
+  "CSI3140": {
+    name: "WWW Structures & Standards",
+    desc: "Web infrastructure, servers, browsers, protocols, search engine architecture, HTML/XML, web interfaces, cookies, Semantic Web, ontologies, web services.",
+    prereqs: ["CSI2110", "CSI2132"],
+    level: 3000
+  },
+
+  // ── 4000 level ────────────────────────────────────────────────────────────
+  "CSI4105": {
+    name: "Design & Analysis of Algorithms II",
+    desc: "NP-completeness theory, methods for NP-complete problems. Topics from combinatorial optimization, computational geometry, cryptography, parallel algorithms.",
+    prereqs: ["CSI3105"],
+    level: 4000
+  },
+  "CSI4106": {
+    name: "Intro to Artificial Intelligence",
+    desc: "Knowledge representation, search (informed, adversarial), deduction, uncertainty, NLP introduction, planning elements, machine learning basics.",
+    prereqs: ["CSI2101"],
+    level: 4000
+  },
+  "CSI4107": {
+    name: "Information Retrieval & Internet",
+    desc: "Indexing, query processing, linguistic aspects, AI approaches to IR, search engines, server/client programming for IR.",
+    prereqs: ["CSI3105"],
+    level: 4000
+  },
+  "CSI4108": {
+    name: "Cryptography",
+    desc: "Secure communication, one-way functions, trap-door functions, pseudorandom generators, public/private-key encryption, digital signatures, zero-knowledge proofs.",
+    prereqs: ["CSI3105"],
+    level: 4000
+  },
+  "CSI4109": {
+    name: "Intro to Distributed Computing",
+    desc: "Computational models, communication complexity, distributed algorithm design & analysis, control algorithms, asynchronous/synchronous computations, fault tolerance.",
+    prereqs: ["CSI3105"],
+    level: 4000
+  },
+  "CSI4125": {
+    name: "Theory of Programming Languages",
+    desc: "Formal semantics, attribute grammars, denotational/operational/axiomatic semantics, lambda-calculus, logic programming semantics, abstract data types, process algebras.",
+    prereqs: ["CSI3104", "CSI3120"],
+    level: 4000
+  },
+  "CSI4130": {
+    name: "Computer Graphics",
+    desc: "Display data structures, graphics pipeline, geometric transformations, 3D viewing, illumination and colour models, 2D/3D object modelling.",
+    prereqs: ["CSI3105"],
+    level: 4000
+  },
+  "CSI4133": {
+    name: "Picture Processing & Analysis",
+    desc: "Digital picture representation, visual perception, imaging geometry, image enhancement/restoration, segmentation, content-based analysis, compression standards.",
+    prereqs: ["CSI3105"],
+    level: 4000
+  },
+  "CSI4140": {
+    name: "Intro to Parallel Computing",
+    desc: "Parallel computation models, parallel architectures, interconnection networks, MPI/OpenMP, parallel algorithm design, load balancing, parallel sorting & graph algorithms.",
+    prereqs: ["CSI3105"],
+    level: 4000
+  },
+  "CSI4141": {
+    name: "Real Time Systems Design",
+    desc: "Real-time system characteristics, reliability, fault tolerance, concurrency, synchronization, scheduling, real-time design methodologies.",
+    prereqs: ["CSI3131"],
+    level: 4000
+  },
+  "CSI4142": {
+    name: "Fundamentals of Data Science",
+    desc: "Big data, data preparation, pattern mining, classification, clustering, anomaly detection, model evaluation, data warehousing, visualization.",
+    prereqs: ["CSI2132", "CSI3120"],
+    level: 4000
+  },
+  "CSI4145": {
+    name: "Machine Learning",
+    desc: "Supervised, unsupervised, and reinforcement learning. Regression, classification, density estimation, and clustering algorithms.",
+    prereqs: ["CSI3105"],
+    level: 4000
+  },
+  "CSI4150": {
+    name: "Intro to Optimization Methods",
+    desc: "Linear programming, simplex method, duality, sensitivity analysis, interior point methods, integer linear programs, branch-and-bound, cutting plane algorithms.",
+    prereqs: ["CSI3105"],
+    level: 4000
+  },
+};
+
+// ── Unlock map ───────────────────────────────────────────────────────────────
+const UNLOCKS = {};
+for (const code of Object.keys(COURSES)) UNLOCKS[code] = [];
+for (const [code, data] of Object.entries(COURSES))
+  for (const pre of data.prereqs)
+    if (COURSES[pre]) UNLOCKS[pre].push(code);
+
+// ── Pastel palette per level ─────────────────────────────────────────────────
+// CSI uses a blue/teal/green/coral scheme distinct from MAT
+const LV = {
+  2000: { strip:'rgba(100,190,255,0.07)', header:'#4a9fd4', nodeFill:'#ddf0fa', nodeBorder:'#90ccea', codeColor:'#1a6898', nameColor:'#4a90c0' },
+  3000: { strip:'rgba(90,210,160,0.07)',  header:'#36b07a', nodeFill:'#d5f5e8', nodeBorder:'#78d8b0', codeColor:'#17784e', nameColor:'#38a870' },
+  4000: { strip:'rgba(255,160,100,0.08)', header:'#d07840', nodeFill:'#fdecd8', nodeBorder:'#f0b888', codeColor:'#a04810', nameColor:'#c87030' },
+};
+
+// ── Layout ───────────────────────────────────────────────────────────────────
+const LEVEL_X = { 2000:160, 3000:500, 4000:840 };
+const NODE_W=142, NODE_H=40, NODE_R=7, V_GAP=56, PAD=72;
+const NAV_H = 48;
+
+const byLevel = {2000:[],3000:[],4000:[]};
+for (const [code,d] of Object.entries(COURSES)) byLevel[d.level].push(code);
+
+const positions = {};
+for (const [lv,codes] of Object.entries(byLevel))
+  codes.forEach((code,i) => { positions[code] = { x:LEVEL_X[lv], y:PAD+i*V_GAP }; });
+
+const canvas = document.getElementById('cv');
+const ctx    = canvas.getContext('2d');
+const CANVAS_W = 1100;
+const maxN = Math.max(...Object.values(byLevel).map(a=>a.length));
+const CANVAS_H = PAD*2 + maxN*V_GAP + 20;
+canvas.width  = CANVAS_W;
+canvas.height = CANVAS_H;
+
+let sel = null;
+let transform = { x:0, y:0, scale:0.9 };
+let isDragging = false, dragStart = {}, panStart = {};
+
+function applyT() {
+  canvas.style.transform = `translate(${transform.x}px,${transform.y}px) scale(${transform.scale})`;
+  canvas.style.transformOrigin = '0 0';
+  canvas.style.marginTop = NAV_H + 'px';
+}
+
+function lerp(a,b,t) { return a+(b-a)*t; }
+
+function drawRR(x,y,w,h,r) {
+  ctx.beginPath();
+  ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y);
+  ctx.quadraticCurveTo(x+w,y,x+w,y+r); ctx.lineTo(x+w,y+h-r);
+  ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h); ctx.lineTo(x+r,y+h);
+  ctx.quadraticCurveTo(x,y+h,x,y+h-r); ctx.lineTo(x,y+r);
+  ctx.quadraticCurveTo(x,y,x+r,y); ctx.closePath();
+}
+
+function render() {
+  ctx.clearRect(0,0,CANVAS_W,CANVAS_H);
+  ctx.fillStyle='#f7f5f0'; ctx.fillRect(0,0,CANVAS_W,CANVAS_H);
+
+  // Dot grid
+  ctx.fillStyle='rgba(0,0,0,0.045)';
+  for(let x=0;x<CANVAS_W;x+=28) for(let y=0;y<CANVAS_H;y+=28){
+    ctx.beginPath(); ctx.arc(x,y,1,0,Math.PI*2); ctx.fill();
+  }
+
+  // Column tinted strips
+  for(const[lv,cx] of Object.entries(LEVEL_X)){
+    ctx.fillStyle=LV[lv].strip; ctx.fillRect(cx-110,0,220,CANVAS_H);
+  }
+
+  // Level pill headers
+  ctx.textAlign='center';
+  for(const[lv,cx] of Object.entries(LEVEL_X)){
+    const label=lv+' Level';
+    ctx.font='700 11px "Space Mono",monospace';
+    const tw=ctx.measureText(label).width, px=14, ph=22;
+    ctx.fillStyle=LV[lv].header+'28';
+    ctx.beginPath(); ctx.roundRect(cx-tw/2-px,13,tw+px*2,ph,ph/2); ctx.fill();
+    ctx.strokeStyle=LV[lv].header+'70'; ctx.lineWidth=1; ctx.stroke();
+    ctx.fillStyle=LV[lv].header; ctx.fillText(label,cx,28);
+    ctx.strokeStyle=LV[lv].header+'28'; ctx.lineWidth=1; ctx.setLineDash([4,7]);
+    ctx.beginPath(); ctx.moveTo(cx,44); ctx.lineTo(cx,CANVAS_H-10); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  const prereqSet = sel ? new Set(COURSES[sel].prereqs.filter(p=>COURSES[p])) : new Set();
+  const unlockSet = sel ? new Set(UNLOCKS[sel]) : new Set();
+
+  // Edges
+  for(const[code,d] of Object.entries(COURSES)){
+    for(const pre of d.prereqs){
+      if(!COURSES[pre]||!positions[pre]||!positions[code]) continue;
+      const p1=positions[pre], p2=positions[code];
+      const isPreH=sel===code&&prereqSet.has(pre);
+      const isUnH =sel===pre &&unlockSet.has(code);
+      const active=isPreH||isUnH;
+      ctx.globalAlpha=sel?(active?1:0.05):0.25;
+      const mx=lerp(p1.x+NODE_W/2,p2.x-NODE_W/2,0.5);
+      ctx.beginPath();
+      ctx.moveTo(p1.x+NODE_W/2,p1.y);
+      ctx.bezierCurveTo(mx,p1.y,mx,p2.y,p2.x-NODE_W/2,p2.y);
+      if(isPreH){ ctx.strokeStyle='#e85d7a'; ctx.lineWidth=2.5; ctx.shadowColor='#e85d7a'; ctx.shadowBlur=8; }
+      else if(isUnH){ ctx.strokeStyle='#3db891'; ctx.lineWidth=2.5; ctx.shadowColor='#3db891'; ctx.shadowBlur=8; }
+      else { ctx.strokeStyle='#bbb4c8'; ctx.lineWidth=1; ctx.shadowBlur=0; }
+      ctx.stroke(); ctx.shadowBlur=0;
+    }
+  }
+  ctx.globalAlpha=1;
+
+  // Nodes
+  for(const[code,d] of Object.entries(COURSES)){
+    const pos=positions[code]; if(!pos) continue;
+    const nx=pos.x-NODE_W/2, ny=pos.y-NODE_H/2, lv=d.level;
+    const isSel=code===sel, isPre=prereqSet.has(code), isUnl=unlockSet.has(code);
+    ctx.globalAlpha=sel&&!isSel&&!isPre&&!isUnl?0.25:1;
+    if(isSel)      {ctx.shadowColor='rgba(212,150,10,0.35)'; ctx.shadowBlur=18;}
+    else if(isPre) {ctx.shadowColor='rgba(232,93,122,0.28)'; ctx.shadowBlur=14;}
+    else if(isUnl) {ctx.shadowColor='rgba(61,184,145,0.26)'; ctx.shadowBlur=14;}
+    else           {ctx.shadowColor='rgba(0,0,0,0.07)';      ctx.shadowBlur=5; }
+    drawRR(nx,ny,NODE_W,NODE_H,NODE_R);
+    ctx.fillStyle=isSel?'#fff8e0':isPre?'#ffedf0':isUnl?'#e6faf4':LV[lv].nodeFill; ctx.fill();
+    ctx.lineWidth=isSel||isPre||isUnl?1.8:1;
+    ctx.strokeStyle=isSel?'#d4960a':isPre?'#e85d7a':isUnl?'#3db891':LV[lv].nodeBorder;
+    drawRR(nx,ny,NODE_W,NODE_H,NODE_R); ctx.stroke(); ctx.shadowBlur=0;
+    ctx.font='700 10px "Space Mono",monospace'; ctx.textAlign='center';
+    ctx.fillStyle=isSel?'#b07808':isPre?'#c03058':isUnl?'#1a7a60':LV[lv].codeColor;
+    ctx.fillText(code,pos.x,pos.y-5);
+    const short=d.name.length>20?d.name.slice(0,19)+'…':d.name;
+    ctx.font='400 9px "DM Sans",sans-serif';
+    ctx.fillStyle=isSel?'#c09020':isPre?'#d06070':isUnl?'#40a880':LV[lv].nameColor;
+    ctx.fillText(short,pos.x,pos.y+10);
+    ctx.globalAlpha=1;
+  }
+}
+
+// ── Events ───────────────────────────────────────────────────────────────────
+canvas.addEventListener('mousedown',e=>{
+  isDragging=false;
+  dragStart={x:e.clientX,y:e.clientY};
+  panStart={x:transform.x,y:transform.y};
+});
+canvas.addEventListener('mousemove',e=>{
+  if(!(e.buttons&1)) return;
+  const dx=e.clientX-dragStart.x, dy=e.clientY-dragStart.y;
+  if(Math.abs(dx)>3||Math.abs(dy)>3){
+    isDragging=true; transform.x=panStart.x+dx; transform.y=panStart.y+dy; applyT();
+  }
+});
+canvas.addEventListener('mouseup',e=>{
+  if(!isDragging){
+    const rect=canvas.getBoundingClientRect();
+    const sx=(e.clientX-rect.left)/transform.scale;
+    const sy=(e.clientY-rect.top)/transform.scale;
+    let hit=null;
+    for(const[code,pos] of Object.entries(positions)){
+      if(sx>=pos.x-NODE_W/2&&sx<=pos.x+NODE_W/2&&sy>=pos.y-NODE_H/2&&sy<=pos.y+NODE_H/2){hit=code;break;}
+    }
+    if(hit){ sel=sel===hit?null:hit; sel?showPanel(hit):hidePanel(); }
+    else { sel=null; hidePanel(); }
+    requestAnimationFrame(render);
+  }
+  isDragging=false;
+});
+canvas.addEventListener('wheel',e=>{
+  e.preventDefault();
+  const rect=canvas.getBoundingClientRect();
+  const cx=e.clientX-rect.left, cy=e.clientY-rect.top;
+  const f=e.deltaY<0?1.1:0.91;
+  const ns=Math.min(3,Math.max(0.25,transform.scale*f)), r=ns/transform.scale;
+  transform.x=cx-r*(cx-transform.x); transform.y=cy-r*(cy-transform.y); transform.scale=ns;
+  applyT();
+},{passive:false});
+
+// ── Panel ─────────────────────────────────────────────────────────────────────
+function showPanel(code){
+  const d=COURSES[code];
+  document.getElementById('panel-code').textContent=code;
+  document.getElementById('panel-name').textContent=d.name;
+  document.getElementById('panel-desc').textContent=d.desc;
+  const preEl=document.getElementById('panel-prereq-section');
+  const prereqs=d.prereqs.filter(p=>COURSES[p]);
+  if(prereqs.length){
+    preEl.style.display='block';
+    document.getElementById('panel-prereqs').innerHTML=prereqs.map(p=>
+      `<span class="chip chip-prereq" onclick="selectCourse('${p}')">${p}</span>`).join('');
+  } else preEl.style.display='none';
+  const unlEl=document.getElementById('panel-unlock-section');
+  const unlocks=UNLOCKS[code]||[];
+  if(unlocks.length){
+    unlEl.style.display='block';
+    document.getElementById('panel-unlocks').innerHTML=unlocks.map(u=>
+      `<span class="chip chip-unlock" onclick="selectCourse('${u}')">${u}</span>`).join('');
+  } else unlEl.style.display='none';
+  document.getElementById('info-panel').classList.add('visible');
+}
+function hidePanel(){ document.getElementById('info-panel').classList.remove('visible'); }
+function selectCourse(code){
+  sel=code; showPanel(code);
+  const pos=positions[code];
+  if(pos){
+    transform.x=window.innerWidth/2 - pos.x*transform.scale;
+    transform.y=window.innerHeight/2 - pos.y*transform.scale;
+    applyT();
+  }
+  requestAnimationFrame(render);
+}
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+buildNav('csi');
+transform.x = (window.innerWidth - CANVAS_W*transform.scale) / 2;
+transform.y = NAV_H + 8;
+applyT();
+requestAnimationFrame(render);
+</script>
+</body>
+</html>
