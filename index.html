@@ -3,10 +3,129 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>uOttawa · CSI Course Map</title>
+<title>uOttawa · Course Map</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<style>
+  body { overflow: auto; }
+
+  #hero {
+    height: calc(100vh - 48px);
+    margin-top: 48px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    text-align: center;
+    padding: 40px;
+  }
+
+  #hero h1 {
+    font-family: 'Space Mono', monospace;
+    font-size: 28px;
+    font-weight: 700;
+    color: #2d2a24;
+    letter-spacing: .08em;
+  }
+
+  #hero h1 span { color: #7b68ee; }
+
+  #hero p {
+    font-size: 14px;
+    color: #8c8578;
+    max-width: 420px;
+    line-height: 1.7;
+  }
+
+  .card-row {
+    display: flex;
+    gap: 16px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .dept-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 28px 36px;
+    border-radius: 14px;
+    border: 1.5px solid #ddd8ce;
+    background: rgba(253,252,250,0.9);
+    text-decoration: none;
+    color: inherit;
+    transition: transform .15s, box-shadow .15s, border-color .15s;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    min-width: 160px;
+  }
+
+  .dept-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+  }
+
+  .dept-card .dot {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    opacity: .85;
+  }
+
+  .dept-card .label {
+    font-family: 'Space Mono', monospace;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: .08em;
+  }
+
+  .dept-card .sublabel {
+    font-size: 11px;
+    color: #8c8578;
+    font-family: 'Space Mono', monospace;
+  }
+
+  .dept-card.coming-soon {
+    opacity: .45;
+    pointer-events: none;
+  }
+</style>
 </head>
 <body>
 
 <nav id="nav"></nav>
+
+<div id="hero">
+  <h1>uOttawa <span>Course Map</span></h1>
+  <p>Click any department below to explore its courses, prerequisites, and what each class unlocks.</p>
+
+  <div class="card-row" id="cards"></div>
+</div>
+
+<script src="nav.js"></script>
+<script>
+  buildNav(null); // no active tab — this is the home page
+
+  // Build cards from the same PAGES array nav.js defines
+  const row = document.getElementById('cards');
+  PAGES.forEach(page => {
+    const a = document.createElement('a');
+    a.href = page.ready ? page.href : '#';
+    a.className = 'dept-card' + (page.ready ? '' : ' coming-soon');
+
+    a.innerHTML = `
+      <div class="dot" style="background:${page.dot}"></div>
+      <div class="label">${page.label}</div>
+      <div class="sublabel">${page.title}${page.ready ? '' : ' · soon'}</div>
+    `;
+
+    a.style.borderColor = page.dot + '66';
+    a.addEventListener('mouseenter', () => { if(page.ready) a.style.borderColor = page.dot; });
+    a.addEventListener('mouseleave', () => { a.style.borderColor = page.dot + '66'; });
+
+    row.appendChild(a);
+  });
+</script>
+</body>
+</html>
