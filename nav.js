@@ -24,17 +24,21 @@ const PAGES = [
     dot:   '#58b0e0',   // sky blue
     ready: true,
   },
-
+  // ── add more departments here ────────────────────────────────────────────
+  // { key:'phy', label:'PHY', title:'Physics',   href:'phy.html', dot:'#e0a858', ready:false },
+  // { key:'sta', label:'STA', title:'Statistics', href:'sta.html', dot:'#60c878', ready:false },
 ];
 
 function buildNav(activePage) {
   const nav = document.getElementById('nav');
   if (!nav) return;
 
-  // Brand
-  const brand = document.createElement('span');
+  // Brand — links back to home
+  const brand = document.createElement('a');
   brand.className = 'brand';
   brand.textContent = 'uOttawa';
+  brand.href = 'index.html';
+  brand.style.textDecoration = 'none';
   nav.appendChild(brand);
 
   const div = document.createElement('div');
