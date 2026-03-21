@@ -71,6 +71,6 @@ function buildNav(activePage) {
   // Right-side hint
   const hint = document.createElement('span');
   hint.className = 'hint-text';
-  hint.textContent = 'Scroll to zoom · Drag to pan · Click to inspect';
+  hint.textContent = 'Scroll to zoom · Drag to pan · Esc closes detail';
   nav.appendChild(hint);
 }
