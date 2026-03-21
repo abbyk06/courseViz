@@ -13,7 +13,7 @@ const PAGES = [
     label: 'MAT',
     title: 'Mathematics',
     href:  'mat.html',
-    dot:   '#8878e0',   // lavender — matches 1000-level MAT pastel
+    dot:   '#8878e0',   // lavender
     ready: true,
   },
   {
@@ -24,9 +24,7 @@ const PAGES = [
     dot:   '#58b0e0',   // sky blue
     ready: true,
   },
-  // ── add more departments here ────────────────────────────────────────────
-  // { key:'phy', label:'PHY', title:'Physics',   href:'phy.html', dot:'#e0a858', ready:false },
-  // { key:'sta', label:'STA', title:'Statistics', href:'sta.html', dot:'#60c878', ready:false },
+
 ];
 
 function buildNav(activePage) {
