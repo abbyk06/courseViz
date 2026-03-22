@@ -2,504 +2,667 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<link rel="icon" href="favicon/favicon.ico">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>uOttawa · CSI Course Map</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+<title>uOttawa · CS Data Science Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:        #f7f5f0;
+  --surface:   rgba(253,252,250,0.97);
+  --border:    #ddd8ce;
+  --text:      #2d2a24;
+  --muted:     #8c8578;
+  --accent:    #5f1240;
+  --done-bg:   #f0ede8;
+  --done-text: #b0a898;
+  --done-line: #ccc8c0;
+  --tag-req:   #221a4e;
+  --tag-grp:   #1a5f3f;
+  --tag-opt:   #7a3f00;
+  --tag-comp:  #1a4a6b;
+  --tag-free:  #5f1240;
+  --nav-h:     48px;
+  --mono: 'Space Mono', monospace;
+  --sans: 'DM Sans', sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 13px;
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+/* ── NAV — just brand ── */
+#nav {
+  position: sticky; top: 0; z-index: 200;
+  height: var(--nav-h);
+  background: rgba(247,245,240,0.98);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  padding: 0 32px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+  backdrop-filter: blur(8px);
+}
+.brand {
+  font-family: var(--mono);
+  font-size: 11px; font-weight: 700;
+  letter-spacing: .18em; text-transform: uppercase;
+  color: var(--accent);
+}
+.brand-sub {
+  font-family: var(--mono);
+  font-size: 10px; color: var(--muted);
+  margin-left: 16px; letter-spacing: .04em;
+}
+.brand-link {
+  font-family: var(--mono);
+  font-size: 10px; color: var(--muted);
+  margin-left: auto;
+  text-decoration: none;
+  letter-spacing: .04em;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 1px;
+  transition: color .15s, border-color .15s;
+}
+.brand-link:hover { color: var(--accent); border-color: var(--accent); }
+
+/* ── MAIN ── */
+.main { max-width: 860px; margin: 0 auto; padding: 40px 24px 100px; }
+
+/* ── ADD COURSE — prominent ── */
+.add-block {
+  margin-bottom: 36px;
+}
+.add-label {
+  font-family: var(--mono);
+  font-size: 10px; font-weight: 700;
+  letter-spacing: .14em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 10px;
+}
+.add-row {
+  display: flex; gap: 0;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--surface);
+  transition: border-color .15s;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+.add-row:focus-within { border-color: var(--accent); }
+.add-input {
+  flex: 1;
+  font-family: var(--mono);
+  font-size: 14px;
+  padding: 13px 18px;
+  border: none; outline: none;
+  background: transparent;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+.add-input::placeholder { color: var(--muted); text-transform: none; font-style: italic; letter-spacing: 0; font-size: 13px; }
+.add-input.err { color: #c0392b; }
+.add-btn {
+  font-family: var(--mono);
+  font-size: 11px; font-weight: 700;
+  padding: 13px 22px;
+  border: none; border-left: 1.5px solid var(--border);
+  background: var(--accent); color: #fff;
+  cursor: pointer; transition: opacity .15s;
+  white-space: nowrap; letter-spacing: .04em;
+}
+.add-btn:hover { opacity: .85; }
+.add-hint {
+  margin-top: 8px;
+  font-family: var(--mono); font-size: 10px; color: var(--muted);
+  line-height: 1.7;
+}
+.add-err {
+  font-family: var(--mono); font-size: 10px; color: #c0392b;
+  margin-top: 5px; min-height: 14px;
+}
+
+/* ── UNIFIED PROGRESS CARD ── */
+.progress-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 22px 24px;
+  margin-bottom: 28px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+}
+
+.prog-top {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin-bottom: 10px;
+}
+.prog-heading {
+  font-family: var(--mono); font-size: 11px; font-weight: 700;
+  letter-spacing: .12em; text-transform: uppercase; color: var(--muted);
+}
+.prog-pct {
+  font-family: var(--mono); font-size: 22px; font-weight: 700; color: var(--text);
+}
+.prog-pct span { font-size: 12px; color: var(--muted); font-weight: 400; margin-left: 4px; }
+
+/* Segmented progress bar */
+.prog-bar {
+  display: flex; height: 6px; border-radius: 99px;
+  overflow: hidden; gap: 2px;
+  background: var(--border);
+  margin-bottom: 18px;
+}
+.prog-seg {
+  height: 100%; border-radius: 99px;
+  transition: flex .5s cubic-bezier(.4,0,.2,1);
+  flex: 0 0 0%;
+}
+
+/* Requirement rows */
+.req-rows { display: flex; flex-direction: column; gap: 8px; }
+.req-row {
+  display: flex; align-items: center; gap: 12px;
+}
+.req-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.req-name { font-size: 12px; color: var(--text); flex: 1; }
+.req-bar-wrap {
+  width: 120px; height: 3px; background: var(--border);
+  border-radius: 99px; overflow: hidden; flex-shrink: 0;
+}
+.req-bar-fill { height: 100%; border-radius: 99px; transition: width .5s; }
+.req-tally {
+  font-family: var(--mono); font-size: 10px; color: var(--muted);
+  min-width: 52px; text-align: right; flex-shrink: 0;
+}
+.req-tally b { color: var(--text); }
+.req-done .req-name { color: var(--done-text); }
+.req-done .req-tally { color: var(--done-line); }
+
+.prog-divider { height: 1px; background: var(--border); margin: 14px 0; }
+
+/* ── OPTION TOGGLE ── */
+.section-label {
+  font-family: var(--mono); font-size: 10px; font-weight: 700;
+  letter-spacing: .12em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 8px;
+}
+.opt-toggle { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 28px; }
+.opt-card {
+  flex: 1; min-width: 210px;
+  padding: 12px 16px;
+  border-radius: 10px; border: 1.5px solid var(--border);
+  background: var(--surface); cursor: pointer;
+  transition: all .15s; user-select: none;
+}
+.opt-card:hover { border-color: #a090b8; }
+.opt-card.active { border-color: var(--tag-req); background: rgba(34,26,78,0.04); }
+.opt-title {
+  font-family: var(--mono); font-size: 11px; font-weight: 700;
+  color: var(--text); margin-bottom: 3px;
+}
+.opt-card.active .opt-title { color: var(--tag-req); }
+.opt-desc { font-size: 11px; color: var(--muted); line-height: 1.5; }
+
+/* ── TABS ── */
+.tabs {
+  display: flex; gap: 2px; margin-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+.tab-btn {
+  font-family: var(--mono); font-size: 10px; font-weight: 700;
+  letter-spacing: .06em; text-transform: uppercase;
+  padding: 7px 14px; border: none; background: transparent;
+  color: var(--muted); cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px; transition: all .13s;
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* ── COURSE LIST ── */
+.level-block { margin-bottom: 26px; }
+.level-head {
+  display: flex; align-items: center; gap: 10px;
+  padding-bottom: 8px; border-bottom: 1px solid var(--border);
+  margin-bottom: 6px;
+}
+.level-num  { font-family: var(--mono); font-size: 10px; font-weight: 700; color: var(--muted); }
+.level-name { font-family: var(--mono); font-size: 10px; color: var(--muted); }
+.level-tally { margin-left: auto; font-family: var(--mono); font-size: 10px; color: var(--muted); }
+.course-list { display: flex; flex-direction: column; gap: 1px; }
+
+.course-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 9px 12px; border-radius: 7px;
+  border: 1px solid transparent; cursor: pointer;
+  transition: background .12s, border-color .12s;
+  user-select: none;
+}
+.course-row:hover { background: rgba(255,255,255,0.8); border-color: var(--border); }
+.course-row.taken { background: var(--done-bg); }
+.course-row.taken .cr-code { color: var(--done-line); text-decoration: line-through; text-decoration-color: var(--done-line); }
+.course-row.taken .cr-name { color: var(--done-text); }
+.course-row.taken .cr-tag  { opacity: 0.28; }
+.course-row.taken .cr-units { color: var(--done-text); }
+
+.cr-check {
+  width: 15px; height: 15px; border-radius: 4px;
+  border: 1.5px solid var(--border); flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px; color: transparent; transition: all .15s;
+}
+.course-row.taken .cr-check { background: var(--done-line); border-color: var(--done-line); color: #fff; }
+
+.cr-code {
+  font-family: var(--mono); font-size: 11px; font-weight: 700;
+  color: var(--text); min-width: 70px; flex-shrink: 0;
+  transition: color .2s;
+}
+.cr-name {
+  flex: 1; font-size: 12px; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  transition: color .2s;
+}
+.cr-tag {
+  font-family: var(--mono); font-size: 9px; font-weight: 700;
+  padding: 2px 7px; border-radius: 4px; flex-shrink: 0;
+  transition: opacity .2s;
+}
+.tag-req  { background: rgba(34,26,78,.07);  color: var(--tag-req);  border: 1px solid rgba(34,26,78,.14); }
+.tag-grp  { background: rgba(26,95,63,.07);  color: var(--tag-grp);  border: 1px solid rgba(26,95,63,.16); }
+.tag-opt  { background: rgba(122,63,0,.07);  color: var(--tag-opt);  border: 1px solid rgba(122,63,0,.14); }
+.tag-comp { background: rgba(26,74,107,.07); color: var(--tag-comp); border: 1px solid rgba(26,74,107,.14); }
+.tag-free { background: rgba(95,18,64,.06);  color: var(--tag-free); border: 1px solid rgba(95,18,64,.13); }
+
+.cr-units { font-family: var(--mono); font-size: 10px; color: var(--muted); min-width: 18px; text-align: right; flex-shrink: 0; transition: color .2s; }
+.cr-remove {
+  background: none; border: none; font-size: 12px; color: var(--muted);
+  cursor: pointer; padding: 0 2px; opacity: 0; flex-shrink: 0;
+  transition: opacity .12s, color .12s; line-height: 1;
+}
+.course-row:hover .cr-remove { opacity: 1; }
+.cr-remove:hover { color: #c0392b; }
+
+.empty-note {
+  font-family: var(--mono); font-size: 11px; color: var(--muted);
+  text-align: center; padding: 32px;
+  border: 1px dashed var(--border); border-radius: 10px;
+}
+
+@keyframes rowIn { from { opacity:0; transform:translateY(3px); } to { opacity:1; transform:none; } }
+.course-row { animation: rowIn .14s ease both; }
+</style>
 </head>
 <body>
 
-<nav id="nav"></nav>
+<nav id="nav">
+  <span class="brand">uOttawa</span>
+  <span class="brand-sub">BSc CS · Data Science Option</span>
+  <a class="brand-link" href="https://catalogue.uottawa.ca/en/undergrad/honours-bsc-computer-science-data-science-option/#programrequirementstext" target="_blank" rel="noopener">Calendar ↗</a>
+</nav>
 
-<div id="info-panel">
-  <h2 id="panel-code"></h2>
-  <div class="course-name" id="panel-name"></div>
-  <div id="panel-prereq-section" style="display:none">
-    <div class="section-title section-prereq">▲ Prerequisites</div>
-    <div class="chip-list" id="panel-prereqs"></div>
+<div class="main">
+
+  <!-- ADD COURSE -->
+  <div class="add-block">
+    <div class="add-label">Add a course you've taken</div>
+    <div class="add-row">
+      <input class="add-input" id="codeInput" placeholder="e.g. CSI 3105 or ELG 3155" maxlength="10" autocomplete="off" spellcheck="false" />
+      <button class="add-btn" onclick="addCourse()">Mark taken →</button>
+    </div>
+    <div class="add-hint">
+      Type any course code (e.g. <b>ELG 3155</b>). Known courses are marked automatically. Unknown codes are auto-categorised:<br>
+      <b>CEG/ELG/SEG 3000-level or CSI 4000-level</b> → counts toward your option path &nbsp;·&nbsp;
+      <b>CSI</b> (other levels) → free computing elective &nbsp;·&nbsp;
+      Everything else → non-computing free elective
+    </div>
+    <div class="add-err" id="addErr"></div>
   </div>
-  <div id="panel-unlock-section" style="display:none">
-    <div class="section-title section-unlock">▼ Unlocks</div>
-    <div class="chip-list" id="panel-unlocks"></div>
+
+  <!-- UNIFIED PROGRESS CARD -->
+  <div class="progress-card">
+    <div class="prog-top">
+      <span class="prog-heading">Degree Progress</span>
+      <span class="prog-pct" id="progPct">0%<span id="progUnits"> · 0 / 120 units</span></span>
+    </div>
+    <div class="prog-bar" id="progBar">
+      <div class="prog-seg" id="seg-req"   style="background:#221a4e"></div>
+      <div class="prog-seg" id="seg-grp"   style="background:#1a5f3f"></div>
+      <div class="prog-seg" id="seg-comp"  style="background:#1a4a6b"></div>
+      <div class="prog-seg" id="seg-free"  style="background:#5f1240"></div>
+      <div class="prog-seg" id="seg-other" style="background:#c8b9a8"></div>
+    </div>
+    <div class="req-rows" id="reqRows"></div>
   </div>
-  <div class="description" id="panel-desc"></div>
+
+  <!-- OPTION TOGGLE -->
+  <div class="section-label">Elective Path</div>
+  <div class="opt-toggle">
+    <div class="opt-card active" onclick="setOption(1)" id="optCard1">
+      <div class="opt-title">Option 1</div>
+      <div class="opt-desc">6u free — CEG/ELG/SEG at 3000-level or CSI at 4000-level</div>
+    </div>
+    <div class="opt-card" onclick="setOption(2)" id="optCard2">
+      <div class="opt-title">Option 2</div>
+      <div class="opt-desc">CSI 2372 + 3u — CEG/ELG/SEG at 3000-level or CSI at 4000-level</div>
+    </div>
+  </div>
+
+  <!-- TABS + COURSE LIST -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="setTab('remaining')" id="tRemaining">Remaining</button>
+    <button class="tab-btn"        onclick="setTab('taken')"     id="tTaken">Taken (<span id="takenN">0</span>)</button>
+    <button class="tab-btn"        onclick="setTab('all')"       id="tAll">All</button>
+  </div>
+  <div id="courseArea"></div>
+
 </div>
-
-<div id="legend">
-  <div class="legend-item"><div class="legend-dot" style="background:#d4960a"></div> Selected</div>
-  <div class="legend-item"><div class="legend-line" style="background:#e85d7a"></div> Prerequisite of</div>
-  <div class="legend-item"><div class="legend-line" style="background:#3db891"></div> Unlocks access to</div>
-</div>
-
-
-<div id="canvas-stage"><canvas id="cv"></canvas></div>
-
-<script src="nav.js"></script>
 
 <script>
-// ── Course data ──────────────────────────────────────────────────────────────
-// Prereqs listed are CSI-only; MAT/ITI deps shown in description & panel
-// ITI prereqs (1121 etc.) are entry-level and not in this map — omitted from graph
-const COURSES = {
-
-  // ── 2000 level ────────────────────────────────────────────────────────────
-  "CSI2101": {
-    name: "Discrete Structures",
-    desc: "Predicate logic, proof techniques, induction, graph theory, program correctness, recurrence relations, integer properties and basic cryptography.",
-    prereqs: [],
-    level: 2000
-  },
-  "CSI2110": {
-    name: "Data Structures & Algorithms",
-    desc: "Abstract data types, complexity analysis, trees, search (balanced trees, hashing), sorting, graph algorithms, string matching.",
-    prereqs: ["CSI2101"],
-    level: 2000
-  },
-  "CSI2120": {
-    name: "Programming Paradigms",
-    desc: "Object-oriented, imperative, logic, and functional paradigms. Programming in multiple languages. Constraint-based, rule-based, and event-driven overviews.",
-    prereqs: ["CSI2110"],
-    level: 2000
-  },
-  "CSI2132": {
-    name: "Databases I",
-    desc: "Entity-Relationship modelling, relational algebra, SQL, embedded SQL, functional dependencies, normalization, physical database design. Team project.",
-    prereqs: ["CSI2110"],
-    level: 2000
-  },
-  "CSI2372": {
-    name: "Advanced Programming in C++",
-    desc: "C++ vs Java, pointers, memory management, OOP in C++, file I/O, templates and STL, numerical computation, hardware interfacing.",
-    prereqs: [],
-    level: 2000
-  },
-
-  // ── 3000 level ────────────────────────────────────────────────────────────
-  "CSI3104": {
-    name: "Intro to Formal Languages",
-    desc: "Regular languages, finite automata, Kleene's theorem, context-free languages, pushdown automata, decidability, Turing machines, halting problem.",
-    prereqs: ["CSI2101"],
-    level: 3000
-  },
-  "CSI3105": {
-    name: "Design & Analysis of Algorithms I",
-    desc: "Worst-case & complexity analysis, asymptotic notation. Brute force, divide & conquer, dynamic programming, greedy, backtracking. P, NP, NP-complete.",
-    prereqs: ["CSI2110", "CSI2101"],
-    level: 3000
-  },
-  "CSI3120": {
-    name: "Programming Language Concepts",
-    desc: "Design criteria for languages, syntactic & semantic description, scripting languages, data types, control structures, subprograms, concurrency basics.",
-    prereqs: ["CSI2101", "CSI2120"],
-    level: 3000
-  },
-  "CSI3130": {
-    name: "Databases II",
-    desc: "Advanced physical DB design, query processing & optimization, transaction processing, concurrency control, OO databases, distributed DBs, data warehousing.",
-    prereqs: ["CSI2132"],
-    level: 3000
-  },
-  "CSI3131": {
-    name: "Operating Systems",
-    desc: "Process management, scheduling, concurrency, CPU scheduling, memory management, virtual memory, mass storage, I/O, file systems, security.",
-    prereqs: ["CSI2110"],
-    level: 3000
-  },
-  "CSI3140": {
-    name: "WWW Structures & Standards",
-    desc: "Web infrastructure, servers, browsers, protocols, search engine architecture, HTML/XML, web interfaces, cookies, Semantic Web, ontologies, web services.",
-    prereqs: ["CSI2110", "CSI2132"],
-    level: 3000
-  },
-
-  // ── 4000 level ────────────────────────────────────────────────────────────
-  "CSI4105": {
-    name: "Design & Analysis of Algorithms II",
-    desc: "NP-completeness theory, methods for NP-complete problems. Topics from combinatorial optimization, computational geometry, cryptography, parallel algorithms.",
-    prereqs: ["CSI3105"],
-    level: 4000
-  },
-  "CSI4106": {
-    name: "Intro to Artificial Intelligence",
-    desc: "Knowledge representation, search (informed, adversarial), deduction, uncertainty, NLP introduction, planning elements, machine learning basics.",
-    prereqs: ["CSI2101"],
-    level: 4000
-  },
-  "CSI4107": {
-    name: "Information Retrieval & Internet",
-    desc: "Indexing, query processing, linguistic aspects, AI approaches to IR, search engines, server/client programming for IR.",
-    prereqs: ["CSI3105"],
-    level: 4000
-  },
-  "CSI4108": {
-    name: "Cryptography",
-    desc: "Secure communication, one-way functions, trap-door functions, pseudorandom generators, public/private-key encryption, digital signatures, zero-knowledge proofs.",
-    prereqs: ["CSI3105"],
-    level: 4000
-  },
-  "CSI4109": {
-    name: "Intro to Distributed Computing",
-    desc: "Computational models, communication complexity, distributed algorithm design & analysis, control algorithms, asynchronous/synchronous computations, fault tolerance.",
-    prereqs: ["CSI3105"],
-    level: 4000
-  },
-  "CSI4125": {
-    name: "Theory of Programming Languages",
-    desc: "Formal semantics, attribute grammars, denotational/operational/axiomatic semantics, lambda-calculus, logic programming semantics, abstract data types, process algebras.",
-    prereqs: ["CSI3104", "CSI3120"],
-    level: 4000
-  },
-  "CSI4130": {
-    name: "Computer Graphics",
-    desc: "Display data structures, graphics pipeline, geometric transformations, 3D viewing, illumination and colour models, 2D/3D object modelling.",
-    prereqs: ["CSI3105"],
-    level: 4000
-  },
-  "CSI4133": {
-    name: "Picture Processing & Analysis",
-    desc: "Digital picture representation, visual perception, imaging geometry, image enhancement/restoration, segmentation, content-based analysis, compression standards.",
-    prereqs: ["CSI3105"],
-    level: 4000
-  },
-  "CSI4140": {
-    name: "Intro to Parallel Computing",
-    desc: "Parallel computation models, parallel architectures, interconnection networks, MPI/OpenMP, parallel algorithm design, load balancing, parallel sorting & graph algorithms.",
-    prereqs: ["CSI3105"],
-    level: 4000
-  },
-  "CSI4141": {
-    name: "Real Time Systems Design",
-    desc: "Real-time system characteristics, reliability, fault tolerance, concurrency, synchronization, scheduling, real-time design methodologies.",
-    prereqs: ["CSI3131"],
-    level: 4000
-  },
-  "CSI4142": {
-    name: "Fundamentals of Data Science",
-    desc: "Big data, data preparation, pattern mining, classification, clustering, anomaly detection, model evaluation, data warehousing, visualization.",
-    prereqs: ["CSI2132", "CSI3120"],
-    level: 4000
-  },
-  "CSI4145": {
-    name: "Machine Learning",
-    desc: "Supervised, unsupervised, and reinforcement learning. Regression, classification, density estimation, and clustering algorithms.",
-    prereqs: ["CSI3105"],
-    level: 4000
-  },
-  "CSI4150": {
-    name: "Intro to Optimization Methods",
-    desc: "Linear programming, simplex method, duality, sensitivity analysis, interior point methods, integer linear programs, branch-and-bound, cutting plane algorithms.",
-    prereqs: ["CSI3105"],
-    level: 4000
-  },
-};
-
-// ── Unlock map ───────────────────────────────────────────────────────────────
-const UNLOCKS = {};
-for (const code of Object.keys(COURSES)) UNLOCKS[code] = [];
-for (const [code, data] of Object.entries(COURSES))
-  for (const pre of data.prereqs)
-    if (COURSES[pre]) UNLOCKS[pre].push(code);
-
-// ── Pastel palette per level ─────────────────────────────────────────────────
-// CSI uses a blue/teal/green/coral scheme distinct from MAT
-const LV = {
-  2000: { strip:'rgba(100,190,255,0.07)', header:'#4a9fd4', nodeFill:'#ddf0fa', nodeBorder:'#90ccea', codeColor:'#1a6898', nameColor:'#4a90c0' },
-  3000: { strip:'rgba(90,210,160,0.07)',  header:'#36b07a', nodeFill:'#d5f5e8', nodeBorder:'#78d8b0', codeColor:'#17784e', nameColor:'#38a870' },
-  4000: { strip:'rgba(255,160,100,0.08)', header:'#d07840', nodeFill:'#fdecd8', nodeBorder:'#f0b888', codeColor:'#a04810', nameColor:'#c87030' },
-};
-
-// ── Layout ───────────────────────────────────────────────────────────────────
-const LEVEL_X = { 2000:160, 3000:500, 4000:840 };
-const NODE_W=142, NODE_H=40, NODE_R=7, V_GAP=56, PAD=72;
-const NAV_H = 48;
-
-const byLevel = {2000:[],3000:[],4000:[]};
-for (const [code,d] of Object.entries(COURSES)) byLevel[d.level].push(code);
-
-const positions = {};
-for (const [lv,codes] of Object.entries(byLevel))
-  codes.forEach((code,i) => { positions[code] = { x:LEVEL_X[lv], y:PAD+i*V_GAP }; });
-
-const canvas = document.getElementById('cv');
-const ctx    = canvas.getContext('2d');
-const CANVAS_W = 1100;
-const maxN = Math.max(...Object.values(byLevel).map(a=>a.length));
-const CANVAS_H = PAD*2 + maxN*V_GAP + 20;
-
-let sel = null;
-let transform = { x:0, y:0, scale:1.02 };
-let isDragging = false, dragStart = {}, panStart = {};
-const DPR_CAP = 2;
-let lastCanvasBuf = { w: 0, h: 0 };
-
-function deviceDpr() { return Math.min(window.devicePixelRatio || 1, DPR_CAP); }
-
-function syncCanvasSize() {
-  const dpr = deviceDpr(), s = transform.scale;
-  const bw = Math.max(1, Math.round(CANVAS_W * s * dpr));
-  const bh = Math.max(1, Math.round(CANVAS_H * s * dpr));
-  if (bw !== lastCanvasBuf.w || bh !== lastCanvasBuf.h) {
-    canvas.width = bw;
-    canvas.height = bh;
-    lastCanvasBuf.w = bw;
-    lastCanvasBuf.h = bh;
-  }
-  canvas.style.width = (CANVAS_W * s) + 'px';
-  canvas.style.height = (CANVAS_H * s) + 'px';
-  canvas.style.position = 'absolute';
-  canvas.style.left = transform.x + 'px';
-  canvas.style.top = transform.y + 'px';
-  canvas.style.marginTop = '';
-  canvas.style.transform = '';
+// ── ELECTIVE CATEGORISATION ───────────────────────────────────────────────
+// Option path: CEG/ELG/SEG at 3000-level  OR  CSI at 4000-level
+function isOptionPath(code) {
+  const pfx = code.split(' ')[0];
+  const lvl = getLevel(code);
+  if (['CEG','ELG','SEG'].includes(pfx) && lvl === 3000) return true;
+  if (pfx === 'CSI' && lvl === 4000) return true;
+  return false;
+}
+// Free computing elective: CSI at any level (not already option-path)
+function isCsiElective(code) {
+  return code.split(' ')[0] === 'CSI';
+}
+// Derive the extra type from code
+function extraType(code) {
+  if (isOptionPath(code)) return 'opt-path';
+  if (isCsiElective(code)) return 'csi-elec';
+  return 'free';
 }
 
-function lerp(a,b,t) { return a+(b-a)*t; }
+// ── COURSE DATA ───────────────────────────────────────────────────────────
+const REQUIRED = [
+  { code:'ENG 1112', name:'Technical Report Writing',                  units:3, type:'req'  },
+  { code:'ITI 1100', name:'Digital Systems I',                          units:3, type:'req'  },
+  { code:'ITI 1120', name:'Introduction to Computing I',                units:3, type:'req'  },
+  { code:'ITI 1121', name:'Introduction to Computing II',               units:3, type:'req'  },
+  { code:'MAT 1320', name:'Calculus I',                                 units:3, type:'req'  },
+  { code:'MAT 1322', name:'Calculus II',                                units:3, type:'req'  },
+  { code:'MAT 1341', name:'Introduction to Linear Algebra',             units:3, type:'req'  },
+  { code:'MAT 1348', name:'Discrete Mathematics for Computing',         units:3, type:'req'  },
+  { code:'CEG 2136', name:'Computer Architecture I',                    units:3, type:'req'  },
+  { code:'CSI 2101', name:'Discrete Structures',                        units:3, type:'req'  },
+  { code:'CSI 2110', name:'Data Structures and Algorithms',             units:3, type:'req'  },
+  { code:'CSI 2120', name:'Programming Paradigms',                      units:3, type:'req'  },
+  { code:'CSI 2132', name:'Databases I',                                units:3, type:'req'  },
+  { code:'CSI 2911', name:'Professional Practice in Computing',         units:3, type:'req'  },
+  { code:'SEG 2105', name:'Introduction to Software Engineering',       units:3, type:'req'  },
+  { code:'MAT 2377', name:'Probability and Statistics for Engineers',   units:3, type:'req'  },
+  { code:'CEG 3185', name:'Intro to Data Comms and Networking',         units:3, type:'req'  },
+  { code:'CSI 3104', name:'Introduction to Formal Languages',           units:3, type:'req'  },
+  { code:'CSI 3105', name:'Design and Analysis of Algorithms I',        units:3, type:'req'  },
+  { code:'CSI 3120', name:'Programming Language Concepts',              units:3, type:'req'  },
+  { code:'CSI 3130', name:'Databases II',                               units:3, type:'req'  },
+  { code:'CSI 3131', name:'Operating Systems',                          units:3, type:'req'  },
+  { code:'CSI 3140', name:'WWW Structures, Techniques and Standards',   units:3, type:'req'  },
+  { code:'CSI 4142', name:'Fundamentals of Data Science',               units:3, type:'req'  },
+  { code:'CSI 4900', name:'Honours Project',                            units:3, type:'req'  },
+  // CSI 4000 group — need 9u (pick 3)
+  { code:'CSI 4106', name:'Introduction to Artificial Intelligence',    units:3, type:'grp'  },
+  { code:'CSI 4107', name:'Information Retrieval and the Internet',     units:3, type:'grp'  },
+  { code:'CSI 4108', name:'Cryptography',                               units:3, type:'grp'  },
+  { code:'CSI 4139', name:'Design of Secure Computer Systems',          units:3, type:'grp'  },
+  // Option 2 only
+  { code:'CSI 2372', name:'Advanced Programming Concepts with C++',     units:3, type:'opt2' },
+];
 
-function drawRR(x,y,w,h,r) {
-  ctx.beginPath();
-  ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y);
-  ctx.quadraticCurveTo(x+w,y,x+w,y+r); ctx.lineTo(x+w,y+h-r);
-  ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h); ctx.lineTo(x+r,y+h);
-  ctx.quadraticCurveTo(x,y+h,x,y+h-r); ctx.lineTo(x,y+r);
-  ctx.quadraticCurveTo(x,y,x+r,y); ctx.closePath();
+const CODE_RE = /^[A-Z]{2,4} \d{4}$/;
+const KNOWN   = new Set(REQUIRED.map(c => c.code));
+
+// ── STATE ─────────────────────────────────────────────────────────────────
+let taken    = new Set();
+let extras   = [];          // { code, name, units, isComputing }
+let selOpt   = 1;
+let activeTab= 'remaining';
+
+function save() {
+  localStorage.setItem('uo3_taken',  JSON.stringify([...taken]));
+  localStorage.setItem('uo3_extras', JSON.stringify(extras));
+  localStorage.setItem('uo3_opt',    selOpt);
+}
+function load() {
+  try {
+    const t = localStorage.getItem('uo3_taken');  if(t) taken  = new Set(JSON.parse(t));
+    const e = localStorage.getItem('uo3_extras'); if(e) extras = JSON.parse(e);
+    const o = localStorage.getItem('uo3_opt');    if(o) selOpt = +o;
+  } catch {}
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────
+function getLevel(code) { const m = code.match(/(\d)/); return m ? +m[1]*1000 : 9000; }
+const LEVEL_LABEL = { 1000:'1st Year', 2000:'2nd Year', 3000:'3rd Year', 4000:'4th Year' };
+
+function allCourses() {
+  const base = REQUIRED.filter(c => c.type !== 'opt2' || selOpt === 2);
+  return [
+    ...base,
+    ...extras.map(e => ({ ...e, type: e.etype || 'free' }))
+  ];
+}
+
+// Unit breakdowns
+function reqDone()     { return [...taken].filter(c => { const f=REQUIRED.find(r=>r.code===c); return f&&f.type==='req'; }).length * 3; }
+function grpDone()     { return [...taken].filter(c => { const f=REQUIRED.find(r=>r.code===c); return f&&f.type==='grp'; }).length * 3; }
+function optPathDone() { return extras.filter(e => e.etype==='opt-path' && taken.has(e.code)).length * 3; }
+function csiElecDone() { return extras.filter(e => e.etype==='csi-elec' && taken.has(e.code)).length * 3; }
+function freeDone()    { return extras.filter(e => e.etype==='free'     && taken.has(e.code)).length * 3; }
+function totalDone(){
+  let u = 0;
+  for (const code of taken) {
+    const f = REQUIRED.find(c => c.code === code);
+    if (f) { u += f.units; continue; }
+    const x = extras.find(e => e.code === code);
+    if (x) u += x.units;
+  }
+  return u;
+}
+
+// ── INTERACTIONS ──────────────────────────────────────────────────────────
+function setOption(n) {
+  selOpt = n;
+  document.getElementById('optCard1').classList.toggle('active', n===1);
+  document.getElementById('optCard2').classList.toggle('active', n===2);
+  save(); render();
+}
+
+function setTab(t) {
+  activeTab = t;
+  ['remaining','taken','all'].forEach(x => {
+    document.getElementById('t' + x.charAt(0).toUpperCase() + x.slice(1))
+      .classList.toggle('active', x === t);
+  });
+  render();
+}
+
+function toggle(code) {
+  if (taken.has(code)) taken.delete(code);
+  else {
+    taken.add(code);
+    if (!KNOWN.has(code) && !extras.find(e => e.code === code))
+      extras.push({ code, name:'Custom / Elective', units:3, etype: extraType(code) });
+  }
+  save(); render();
+}
+
+function removeExtra(code, ev) {
+  ev.stopPropagation();
+  taken.delete(code);
+  extras = extras.filter(e => e.code !== code);
+  save(); render();
+}
+
+function addCourse() {
+  const inp = document.getElementById('codeInput');
+  const err = document.getElementById('addErr');
+  const raw = inp.value.trim().toUpperCase().replace(/\s+/, ' ');
+  if (!CODE_RE.test(raw)) {
+    err.textContent = '✕ Invalid format — use ABC 1234 (2–4 letters, space, 4 digits)';
+    inp.classList.add('err'); return;
+  }
+  if (taken.has(raw)) {
+    err.textContent = '✕ ' + raw + ' is already marked as taken';
+    inp.classList.add('err'); return;
+  }
+  err.textContent = ''; inp.classList.remove('err');
+  taken.add(raw);
+  if (!KNOWN.has(raw) && !extras.find(e => e.code === raw))
+    extras.push({ code:raw, name:'Custom / Elective', units:3, etype: extraType(raw) });
+  inp.value = '';
+  save(); render();
+}
+
+// ── RENDER: PROGRESS CARD ─────────────────────────────────────────────────
+function bar(done, needed, color) {
+  const pct = needed ? Math.min(100, Math.round(done/needed*100)) : 0;
+  return `<div class="req-bar-wrap"><div class="req-bar-fill" style="width:${pct}%;background:${color}"></div></div>`;
+}
+
+function renderProgress() {
+  const rd  = reqDone();
+  const gd  = grpDone();
+  const opd = optPathDone();
+  const ced = csiElecDone();
+  const fd  = freeDone();
+  const tot = totalDone();
+  const pct = Math.min(100, Math.round(tot / 120 * 100));
+
+  document.getElementById('progPct').childNodes[0].textContent = pct + '%';
+  document.getElementById('progUnits').textContent = ` · ${tot} / 120 units`;
+
+  const toWidth = (u) => Math.min(100, u/120*100).toFixed(2) + '%';
+  document.getElementById('seg-req').style.flex   = `0 0 ${toWidth(rd)}`;
+  document.getElementById('seg-grp').style.flex   = `0 0 ${toWidth(gd)}`;
+  document.getElementById('seg-comp').style.flex  = `0 0 ${toWidth(opd)}`;
+  document.getElementById('seg-free').style.flex  = `0 0 ${toWidth(ced + fd)}`;
+
+  const optNeeded = selOpt === 1 ? 6 : 3;
+
+  const rows = [
+    {
+      label: 'Core required courses',
+      done: rd, needed: 75, color: '#221a4e'
+    },
+    {
+      label: 'CSI 4000 elective group — pick 3 of 4 (9u)',
+      done: gd, needed: 9, color: '#1a5f3f'
+    },
+    {
+      label: selOpt === 1
+        ? 'Option 1 — CEG/ELG/SEG 3000-level or CSI 4000-level (6u)'
+        : 'Option 2 — CSI 2372 + CEG/ELG/SEG 3000-level or CSI 4000-level (3u)',
+      done: opd, needed: optNeeded, color: '#1a4a6b'
+    },
+    {
+      label: 'Free computing electives — CSI any level (6u)',
+      done: ced, needed: 6, color: '#5f5080'
+    },
+    {
+      label: 'Non-computing electives — 8 courses outside computing (24u)',
+      done: fd, needed: 24, color: '#c8b9a8'
+    },
+  ];
+
+  document.getElementById('reqRows').innerHTML = rows.map(r => {
+    const complete = r.done >= r.needed;
+    return `<div class="req-row ${complete ? 'req-done' : ''}">
+      <div class="req-dot" style="background:${r.color}"></div>
+      <span class="req-name">${r.label}</span>
+      ${bar(r.done, r.needed, r.color)}
+      <span class="req-tally"><b>${r.done}</b> / ${r.needed}u${complete ? ' ✓' : ''}</span>
+    </div>`;
+  }).join('');
+
+  document.getElementById('takenN').textContent = taken.size;
+}
+
+// ── RENDER: COURSE LIST ───────────────────────────────────────────────────
+function tagHTML(type) {
+  const map = {
+    req:       ['tag-req',  'required'],
+    grp:       ['tag-grp',  '4000 group'],
+    opt2:      ['tag-opt',  'option 2'],
+    'opt-path':['tag-comp', 'option path'],
+    'csi-elec':['tag-free', 'CSI elective'],
+    free:      ['tag-free', 'free elec.'],
+  };
+  const [cls, lbl] = map[type] || ['tag-free','elective'];
+  return `<span class="cr-tag ${cls}">${lbl}</span>`;
+}
+
+function rowHTML(course) {
+  const isTaken = taken.has(course.code);
+  const isExtra = !KNOWN.has(course.code);
+  const rem = isExtra
+    ? `<button class="cr-remove" onclick="removeExtra('${course.code}',event)" title="Remove">✕</button>`
+    : '';
+  return `<div class="course-row ${isTaken?'taken':''}" onclick="toggle('${course.code}')">
+    <div class="cr-check">${isTaken ? '✓' : ''}</div>
+    <span class="cr-code">${course.code}</span>
+    <span class="cr-name" title="${course.name}">${course.name}</span>
+    ${tagHTML(course.type)}
+    <span class="cr-units">${course.units}u</span>
+    ${rem}
+  </div>`;
+}
+
+function renderCourses() {
+  const list = allCourses();
+  let display;
+  if (activeTab === 'remaining') display = list.filter(c => !taken.has(c.code));
+  else if (activeTab === 'taken') display = list.filter(c =>  taken.has(c.code));
+  else display = list;
+
+  if (!display.length) {
+    return activeTab === 'taken'
+      ? '<div class="empty-note">Nothing marked yet — type a course code above and hit Enter.</div>'
+      : '<div class="empty-note">All done! 🎓</div>';
+  }
+
+  const groups = {};
+  for (const c of display) {
+    const lvl = getLevel(c.code);
+    (groups[lvl] = groups[lvl] || []).push(c);
+  }
+
+  return Object.keys(groups).map(Number).sort().map(lvl => `
+    <div class="level-block">
+      <div class="level-head">
+        <span class="level-num">${lvl}</span>
+        <span class="level-name">${LEVEL_LABEL[lvl] || 'Other'}</span>
+        <span class="level-tally">${groups[lvl].length} course${groups[lvl].length !== 1 ? 's' : ''}</span>
+      </div>
+      <div class="course-list">${groups[lvl].map(rowHTML).join('')}</div>
+    </div>`).join('');
 }
 
 function render() {
-  syncCanvasSize();
-  const dpr = deviceDpr(), s = transform.scale;
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.setTransform(s * dpr, 0, 0, s * dpr, 0, 0);
-  ctx.fillStyle='#f7f5f0'; ctx.fillRect(0,0,CANVAS_W,CANVAS_H);
-
-  // Dot grid
-  ctx.fillStyle='rgba(0,0,0,0.045)';
-  for(let x=0;x<CANVAS_W;x+=28) for(let y=0;y<CANVAS_H;y+=28){
-    ctx.beginPath(); ctx.arc(x,y,1,0,Math.PI*2); ctx.fill();
-  }
-
-  // Column tinted strips
-  for(const[lv,cx] of Object.entries(LEVEL_X)){
-    ctx.fillStyle=LV[lv].strip; ctx.fillRect(cx-110,0,220,CANVAS_H);
-  }
-
-  // Level pill headers
-  ctx.textAlign='center';
-  for(const[lv,cx] of Object.entries(LEVEL_X)){
-    const label=lv+' Level';
-    ctx.font='700 11px "Space Mono",monospace';
-    const tw=ctx.measureText(label).width, px=14, ph=22;
-    ctx.fillStyle=LV[lv].header+'28';
-    ctx.beginPath(); ctx.roundRect(cx-tw/2-px,13,tw+px*2,ph,ph/2); ctx.fill();
-    ctx.strokeStyle=LV[lv].header+'70'; ctx.lineWidth=1; ctx.stroke();
-    ctx.fillStyle=LV[lv].header; ctx.fillText(label,cx,28);
-    ctx.strokeStyle=LV[lv].header+'28'; ctx.lineWidth=1; ctx.setLineDash([4,7]);
-    ctx.beginPath(); ctx.moveTo(cx,44); ctx.lineTo(cx,CANVAS_H-10); ctx.stroke();
-    ctx.setLineDash([]);
-  }
-
-  const prereqSet = sel ? new Set(COURSES[sel].prereqs.filter(p=>COURSES[p])) : new Set();
-  const unlockSet = sel ? new Set(UNLOCKS[sel]) : new Set();
-
-  // Edges
-  for(const[code,d] of Object.entries(COURSES)){
-    for(const pre of d.prereqs){
-      if(!COURSES[pre]||!positions[pre]||!positions[code]) continue;
-      const p1=positions[pre], p2=positions[code];
-      const isPreH=sel===code&&prereqSet.has(pre);
-      const isUnH =sel===pre &&unlockSet.has(code);
-      const active=isPreH||isUnH;
-      ctx.globalAlpha=sel?(active?1:0.05):0.25;
-      const mx=lerp(p1.x+NODE_W/2,p2.x-NODE_W/2,0.5);
-      ctx.beginPath();
-      ctx.moveTo(p1.x+NODE_W/2,p1.y);
-      ctx.bezierCurveTo(mx,p1.y,mx,p2.y,p2.x-NODE_W/2,p2.y);
-      if(isPreH){ ctx.strokeStyle='#e85d7a'; ctx.lineWidth=2.5; ctx.shadowColor='#e85d7a'; ctx.shadowBlur=8; }
-      else if(isUnH){ ctx.strokeStyle='#3db891'; ctx.lineWidth=2.5; ctx.shadowColor='#3db891'; ctx.shadowBlur=8; }
-      else { ctx.strokeStyle='#bbb4c8'; ctx.lineWidth=1; ctx.shadowBlur=0; }
-      ctx.stroke(); ctx.shadowBlur=0;
-    }
-  }
-  ctx.globalAlpha=1;
-
-  // Nodes
-  for(const[code,d] of Object.entries(COURSES)){
-    const pos=positions[code]; if(!pos) continue;
-    const nx=pos.x-NODE_W/2, ny=pos.y-NODE_H/2, lv=d.level;
-    const isSel=code===sel, isPre=prereqSet.has(code), isUnl=unlockSet.has(code);
-    ctx.globalAlpha=sel&&!isSel&&!isPre&&!isUnl?0.25:1;
-    if(isSel)      {ctx.shadowColor='rgba(212,150,10,0.35)'; ctx.shadowBlur=10;}
-    else if(isPre) {ctx.shadowColor='rgba(232,93,122,0.28)'; ctx.shadowBlur=8;}
-    else if(isUnl) {ctx.shadowColor='rgba(61,184,145,0.26)'; ctx.shadowBlur=8;}
-    else           {ctx.shadowColor='rgba(0,0,0,0.07)';      ctx.shadowBlur=3; }
-    drawRR(nx,ny,NODE_W,NODE_H,NODE_R);
-    ctx.fillStyle=isSel?'#fff8e0':isPre?'#ffedf0':isUnl?'#e6faf4':LV[lv].nodeFill; ctx.fill();
-    ctx.lineWidth=isSel||isPre||isUnl?1.8:1;
-    ctx.strokeStyle=isSel?'#d4960a':isPre?'#e85d7a':isUnl?'#3db891':LV[lv].nodeBorder;
-    drawRR(nx,ny,NODE_W,NODE_H,NODE_R); ctx.stroke(); ctx.shadowBlur=0;
-    ctx.font='700 10px "Space Mono",monospace'; ctx.textAlign='center';
-    ctx.fillStyle=isSel?'#b07808':isPre?'#c03058':isUnl?'#1a7a60':LV[lv].codeColor;
-    ctx.fillText(code,pos.x,pos.y-5);
-    const short=d.name.length>20?d.name.slice(0,19)+'…':d.name;
-    ctx.font='400 9px "DM Sans",sans-serif';
-    ctx.fillStyle=isSel?'#c09020':isPre?'#d06070':isUnl?'#40a880':LV[lv].nameColor;
-    ctx.fillText(short,pos.x,pos.y+10);
-    ctx.globalAlpha=1;
-  }
+  renderProgress();
+  document.getElementById('courseArea').innerHTML = renderCourses();
 }
 
-// ── Events ───────────────────────────────────────────────────────────────────
-canvas.addEventListener('mousedown',e=>{
-  isDragging=false;
-  dragStart={x:e.clientX,y:e.clientY};
-  panStart={x:transform.x,y:transform.y};
-});
-canvas.addEventListener('mousemove',e=>{
-  if(!(e.buttons&1)) return;
-  const dx=e.clientX-dragStart.x, dy=e.clientY-dragStart.y;
-  if(Math.abs(dx)>3||Math.abs(dy)>3){
-    isDragging=true; transform.x=panStart.x+dx; transform.y=panStart.y+dy; requestAnimationFrame(render);
-  }
-});
-canvas.addEventListener('mouseup',e=>{
-  if(!isDragging){
-    const rect=canvas.getBoundingClientRect();
-    const sx=((e.clientX-rect.left)/rect.width)*CANVAS_W;
-    const sy=((e.clientY-rect.top)/rect.height)*CANVAS_H;
-    let hit=null;
-    for(const[code,pos] of Object.entries(positions)){
-      if(sx>=pos.x-NODE_W/2&&sx<=pos.x+NODE_W/2&&sy>=pos.y-NODE_H/2&&sy<=pos.y+NODE_H/2){hit=code;break;}
-    }
-    if(hit){ sel=sel===hit?null:hit; sel?showPanel(hit):hidePanel(); }
-    else { sel=null; hidePanel(); }
-    requestAnimationFrame(render);
-  }
-  isDragging=false;
-});
-canvas.addEventListener('wheel',e=>{
-  e.preventDefault();
-  const rect=canvas.getBoundingClientRect();
-  const cx=e.clientX-rect.left, cy=e.clientY-rect.top;
-  const f=e.deltaY<0?1.1:0.91;
-  const ns=Math.min(3,Math.max(0.25,transform.scale*f)), r=ns/transform.scale;
-  transform.x=cx-r*(cx-transform.x); transform.y=cy-r*(cy-transform.y); transform.scale=ns;
-  requestAnimationFrame(render);
-},{passive:false});
-
-// ── Panel ─────────────────────────────────────────────────────────────────────
-function showPanel(code){
-  const d=COURSES[code];
-  document.getElementById('panel-code').textContent=code;
-  document.getElementById('panel-name').textContent=d.name;
-  document.getElementById('panel-desc').textContent=d.desc;
-  const preEl=document.getElementById('panel-prereq-section');
-  const prereqs=d.prereqs.filter(p=>COURSES[p]);
-  if(prereqs.length){
-    preEl.style.display='block';
-    document.getElementById('panel-prereqs').innerHTML=prereqs.map(p=>
-      `<span class="chip chip-prereq" onclick="selectCourse('${p}')">${p}</span>`).join('');
-  } else preEl.style.display='none';
-  const unlEl=document.getElementById('panel-unlock-section');
-  const unlocks=UNLOCKS[code]||[];
-  if(unlocks.length){
-    unlEl.style.display='block';
-    document.getElementById('panel-unlocks').innerHTML=unlocks.map(u=>
-      `<span class="chip chip-unlock" onclick="selectCourse('${u}')">${u}</span>`).join('');
-  } else unlEl.style.display='none';
-  document.getElementById('info-panel').classList.add('visible');
-}
-function hidePanel(){ document.getElementById('info-panel').classList.remove('visible'); }
-function selectCourse(code){
-  sel=code; showPanel(code);
-  const pos=positions[code];
-  if(pos){
-    transform.x=window.innerWidth/2 - pos.x*transform.scale;
-    transform.y=window.innerHeight/2 - NAV_H - pos.y*transform.scale;
-  }
-  requestAnimationFrame(render);
-}
-
-function clearSelection(){
-  sel=null;
-  hidePanel();
-  requestAnimationFrame(render);
-}
-
-function setupCourseSearch(){
-  const nav=document.getElementById('nav');
-  const hint=nav.querySelector('.hint-text');
-  if(!hint||nav.querySelector('.nav-search')) return;
-  const wrap=document.createElement('div');
-  wrap.className='nav-search';
-  wrap.innerHTML='<input type="text" class="nav-search-input" placeholder="Search courses…" aria-label="Search courses" autocomplete="off"><div class="nav-search-results" hidden></div>';
-  nav.insertBefore(wrap,hint);
-  const input=wrap.querySelector('.nav-search-input');
-  const results=wrap.querySelector('.nav-search-results');
-  function hideResults(){ results.hidden=true; results.innerHTML=''; }
-  function runSearch(q){
-    const t=q.trim().toLowerCase();
-    if(!t){ hideResults(); return; }
-    const list=Object.entries(COURSES).filter(([code,d])=>
-      code.toLowerCase().includes(t)||d.name.toLowerCase().includes(t)).slice(0,12);
-    if(!list.length){ hideResults(); return; }
-    results.innerHTML='';
-    for(const [code,d] of list){
-      const btn=document.createElement('button');
-      btn.type='button';
-      btn.className='nav-search-item';
-      btn.dataset.code=code;
-      const c=document.createElement('span'); c.className='ns-code'; c.textContent=code;
-      const n=document.createElement('span'); n.className='ns-name'; n.textContent=d.name;
-      btn.appendChild(c); btn.appendChild(n);
-      results.appendChild(btn);
-    }
-    results.hidden=false;
-  }
-  input.addEventListener('input',()=>runSearch(input.value));
-  input.addEventListener('keydown',e=>{
-    if(e.key!=='Escape') return;
-    if(!results.hidden&&results.innerHTML){ hideResults(); e.preventDefault(); e.stopPropagation(); return; }
-    input.blur();
-  });
-  results.addEventListener('click',e=>{
-    const btn=e.target.closest('.nav-search-item');
-    if(!btn) return;
-    hideResults();
-    input.value='';
-    selectCourse(btn.dataset.code);
-  });
-  document.addEventListener('click',e=>{ if(!wrap.contains(e.target)) hideResults(); });
-}
-
-document.addEventListener('keydown',e=>{
-  if(e.key!=='Escape') return;
-  const results=document.querySelector('.nav-search-results');
-  if(results&&!results.hidden&&results.innerHTML){ results.hidden=true; results.innerHTML=''; return; }
-  const panel=document.getElementById('info-panel');
-  if(!panel.classList.contains('visible')) return;
-  clearSelection();
+// ── INIT ──────────────────────────────────────────────────────────────────
+document.getElementById('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') addCourse(); });
+document.getElementById('codeInput').addEventListener('input',   () => {
+  document.getElementById('codeInput').classList.remove('err');
+  document.getElementById('addErr').textContent = '';
 });
 
-document.addEventListener('mousedown',e=>{
-  const panel=document.getElementById('info-panel');
-  if(!panel.classList.contains('visible')) return;
-  if(e.target.closest('#info-panel')) return;
-  if(e.target===canvas||e.target.closest('#canvas-stage')) return;
-  clearSelection();
-});
-
-window.addEventListener('resize',()=>{
-  transform.x=(window.innerWidth-CANVAS_W*transform.scale)/2;
-  requestAnimationFrame(render);
-});
-
-// ── Boot ──────────────────────────────────────────────────────────────────────
-buildNav('csi');
-setupCourseSearch();
-transform.x = (window.innerWidth - CANVAS_W*transform.scale) / 2;
-transform.y = 8;
-requestAnimationFrame(render);
+load();
+document.getElementById('optCard1').classList.toggle('active', selOpt === 1);
+document.getElementById('optCard2').classList.toggle('active', selOpt === 2);
+render();
 </script>
 </body>
 </html>

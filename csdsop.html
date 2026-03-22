@@ -3,966 +3,758 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>uOttawa CS – Data Science Tracker</title>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<title>uOttawa · CS Data Science Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0d0f14;
-    --surface: #161921;
-    --surface2: #1e222e;
-    --border: #2a2f3f;
-    --accent: #4f8fff;
-    --accent2: #ff6b6b;
-    --accent3: #43e97b;
-    --accent4: #f9ca24;
-    --text: #e8ecf4;
-    --muted: #7a8299;
-    --done: #43e97b;
-    --todo: #4f8fff;
-    --elective: #f9ca24;
-    --option: #c792ea;
-    --mono: 'IBM Plex Mono', monospace;
-    --sans: 'Syne', sans-serif;
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--sans);
-    min-height: 100vh;
-  }
-
-  /* GRID NOISE BACKGROUND */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(79,143,255,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(79,143,255,0.03) 1px, transparent 1px);
-    background-size: 32px 32px;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  .wrapper {
-    position: relative;
-    z-index: 1;
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 40px 24px 80px;
-  }
-
-  /* HEADER */
-  header {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    margin-bottom: 40px;
-    border-bottom: 1px solid var(--border);
-    padding-bottom: 28px;
-  }
-
-  header .eyebrow {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--accent);
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-  }
-
-  header h1 {
-    font-size: clamp(26px, 5vw, 42px);
-    font-weight: 800;
-    line-height: 1.1;
-    background: linear-gradient(135deg, var(--text) 30%, var(--accent));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  header .subtitle {
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--muted);
-    margin-top: 4px;
-  }
-
-  /* PROGRESS BAR */
-  .progress-section {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px 24px;
-    margin-bottom: 28px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .progress-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .progress-label {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-  }
-
-  .progress-count {
-    font-family: var(--mono);
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--accent);
-  }
-
-  .progress-bar-outer {
-    width: 100%;
-    height: 6px;
-    background: var(--border);
-    border-radius: 99px;
-    overflow: hidden;
-  }
-
-  .progress-bar-inner {
-    height: 100%;
-    background: linear-gradient(90deg, var(--accent), var(--accent3));
-    border-radius: 99px;
-    transition: width 0.6s cubic-bezier(.4,0,.2,1);
-  }
-
-  .progress-stats {
-    display: flex;
-    gap: 20px;
-    flex-wrap: wrap;
-    margin-top: 2px;
-  }
-
-  .stat {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--muted);
-  }
-
-  .stat-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 2px;
-    flex-shrink: 0;
-  }
-
-  /* OPTION TOGGLE */
-  .option-toggle {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 18px 24px;
-    margin-bottom: 28px;
-  }
-
-  .option-toggle h3 {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    margin-bottom: 14px;
-  }
-
-  .option-pills {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-
-  .option-pill {
-    cursor: pointer;
-    padding: 8px 20px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    background: var(--surface2);
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--muted);
-    transition: all 0.18s;
-    user-select: none;
-  }
-
-  .option-pill:hover {
-    border-color: var(--option);
-    color: var(--option);
-  }
-
-  .option-pill.active {
-    background: rgba(199,146,234,0.12);
-    border-color: var(--option);
-    color: var(--option);
-    font-weight: 600;
-  }
-
-  /* ADD COURSE AREA */
-  .add-section {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px 24px;
-    margin-bottom: 36px;
-  }
-
-  .add-section h3 {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    margin-bottom: 14px;
-  }
-
-  .add-row {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    align-items: center;
-  }
-
-  .add-input {
-    flex: 1;
-    min-width: 180px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 9px 14px;
-    font-family: var(--mono);
-    font-size: 13px;
-    color: var(--text);
-    outline: none;
-    text-transform: uppercase;
-    transition: border-color 0.18s;
-  }
-
-  .add-input::placeholder { color: var(--muted); text-transform: none; }
-
-  .add-input:focus {
-    border-color: var(--accent);
-  }
-
-  .add-input.error {
-    border-color: var(--accent2);
-  }
-
-  .add-btn {
-    background: var(--accent);
-    color: #0d0f14;
-    border: none;
-    border-radius: 8px;
-    padding: 9px 20px;
-    font-family: var(--mono);
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.18s, transform 0.1s;
-    white-space: nowrap;
-  }
-
-  .add-btn:hover { background: #6fa8ff; }
-  .add-btn:active { transform: scale(0.97); }
-
-  .add-hint {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--muted);
-    margin-top: 8px;
-  }
-
-  .add-hint span { color: var(--accent4); }
-
-  .error-msg {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--accent2);
-    margin-top: 6px;
-    min-height: 16px;
-  }
-
-  /* TABS */
-  .tabs {
-    display: flex;
-    gap: 0;
-    margin-bottom: 24px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .tab {
-    padding: 10px 20px;
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--muted);
-    cursor: pointer;
-    border-bottom: 2px solid transparent;
-    margin-bottom: -1px;
-    transition: all 0.15s;
-    user-select: none;
-  }
-
-  .tab:hover { color: var(--text); }
-  .tab.active {
-    color: var(--accent);
-    border-bottom-color: var(--accent);
-  }
-
-  /* LEVEL SECTIONS */
-  .level-section {
-    margin-bottom: 32px;
-  }
-
-  .level-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 12px;
-  }
-
-  .level-badge {
-    font-family: var(--mono);
-    font-size: 11px;
-    font-weight: 600;
-    padding: 3px 10px;
-    border-radius: 4px;
-    background: rgba(79,143,255,0.12);
-    color: var(--accent);
-    letter-spacing: 0.08em;
-  }
-
-  .level-title {
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--text);
-    letter-spacing: 0.04em;
-  }
-
-  .level-count {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--muted);
-    margin-left: auto;
-  }
-
-  /* COURSE GRID */
-  .course-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 8px;
-  }
-
-  .course-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 12px 16px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    cursor: pointer;
-    transition: all 0.18s;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .course-card::before {
-    content: '';
-    position: absolute;
-    left: 0; top: 0; bottom: 0;
-    width: 3px;
-    background: var(--border);
-    transition: background 0.18s;
-  }
-
-  .course-card:hover {
-    border-color: rgba(79,143,255,0.4);
-    background: var(--surface2);
-    transform: translateY(-1px);
-  }
-
-  .course-card.taken {
-    background: rgba(67,233,123,0.04);
-    border-color: rgba(67,233,123,0.2);
-  }
-
-  .course-card.taken::before { background: var(--done); }
-
-  .course-card.elective-type {
-    border-style: dashed;
-    border-color: rgba(249,202,36,0.3);
-  }
-
-  .course-card.elective-type::before { background: var(--elective); }
-  .course-card.elective-type.taken::before { background: var(--done); }
-
-  .course-card.option-type::before { background: var(--option); }
-  .course-card.option-type.taken::before { background: var(--done); }
-
-  .check {
-    width: 20px;
-    height: 20px;
-    border-radius: 5px;
-    border: 1.5px solid var(--border);
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.18s;
-    font-size: 11px;
-  }
-
-  .course-card.taken .check {
-    background: var(--done);
-    border-color: var(--done);
-    color: #0d0f14;
-  }
-
-  .course-info { flex: 1; min-width: 0; }
-
-  .course-code {
-    font-family: var(--mono);
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--accent);
-    margin-bottom: 2px;
-  }
-
-  .course-card.taken .course-code { color: var(--done); }
-
-  .course-name {
-    font-size: 12px;
-    color: var(--text);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    line-height: 1.3;
-  }
-
-  .course-card.taken .course-name { color: var(--muted); }
-
-  .course-units {
-    font-family: var(--mono);
-    font-size: 10px;
-    color: var(--muted);
-    flex-shrink: 0;
-  }
-
-  .remove-btn {
-    background: none;
-    border: none;
-    color: var(--muted);
-    cursor: pointer;
-    font-size: 14px;
-    padding: 2px 4px;
-    border-radius: 4px;
-    opacity: 0;
-    transition: all 0.15s;
-    flex-shrink: 0;
-  }
-
-  .course-card:hover .remove-btn { opacity: 1; }
-  .remove-btn:hover { color: var(--accent2); background: rgba(255,107,107,0.1); }
-
-  /* TAKEN TAB SPECIFIC */
-  .taken-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; }
-
-  .empty-state {
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--muted);
-    padding: 24px;
-    text-align: center;
-    border: 1px dashed var(--border);
-    border-radius: 10px;
-  }
-
-  /* LEGEND */
-  .legend {
-    display: flex;
-    gap: 16px;
-    flex-wrap: wrap;
-    margin-bottom: 24px;
-    padding: 14px 18px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-  }
-
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--muted);
-  }
-
-  .legend-dot {
-    width: 10px; height: 10px;
-    border-radius: 2px;
-    flex-shrink: 0;
-  }
-
-  /* ANIMATIONS */
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .course-card { animation: fadeIn 0.2s ease both; }
-
-  /* SCROLLBAR */
-  ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track { background: var(--bg); }
-  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+:root {
+  --bg:      #ebe8e3;
+  --surface: #faf9f6;
+  --border:  #ddd8ce;
+  --text:    #2d2a24;
+  --muted:   #8c8578;
+  --accent:  #5f1240;
+  --col-bg:  #e4e0da;
+  --col-w:   200px;
+  --nav-h:   48px;
+  --prog-h:  62px;
+  --pool-h:  110px;
+
+  --c-req:     #221a4e;
+  --c-grp:     #1a5f3f;
+  --c-opt:     #7a3f00;
+  --c-optpath: #1a4a6b;
+  --c-noncomp: #6b5a3e;
+  --c-free:    #5f1240;
+
+  --mono: 'Space Mono', monospace;
+  --sans: 'DM Sans', sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 13px;
+  line-height: 1.5;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── NAV ── */
+#nav {
+  height: var(--nav-h);
+  flex-shrink: 0;
+  background: rgba(247,245,240,0.98);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  padding: 0 20px; gap: 10px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+  z-index: 100;
+}
+.brand {
+  font-family: var(--mono); font-size: 11px; font-weight: 700;
+  letter-spacing: .18em; text-transform: uppercase; color: var(--accent);
+  white-space: nowrap;
+}
+.nsep { width: 1px; height: 16px; background: var(--border); }
+.brand-sub { font-family: var(--mono); font-size: 10px; color: var(--muted); white-space: nowrap; }
+.nav-sp { flex: 1; }
+.opt-pills { display: flex; gap: 4px; }
+.opt-pill {
+  font-family: var(--mono); font-size: 10px; font-weight: 700;
+  padding: 4px 10px; border-radius: 6px;
+  border: 1px solid var(--border); background: transparent;
+  color: var(--muted); cursor: pointer; transition: all .15s; white-space: nowrap;
+}
+.opt-pill:hover { color: var(--text); background: rgba(0,0,0,0.04); }
+.opt-pill.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.nav-link {
+  font-family: var(--mono); font-size: 10px; color: var(--muted);
+  text-decoration: none; border-bottom: 1px solid var(--border);
+  padding-bottom: 1px; white-space: nowrap; transition: color .15s, border-color .15s;
+}
+.nav-link:hover { color: var(--accent); border-color: var(--accent); }
+
+/* ── PROGRESS STRIP ── */
+#prog-strip {
+  height: var(--prog-h);
+  flex-shrink: 0;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 8px 20px 10px;
+  display: flex; flex-direction: column; gap: 5px;
+}
+.prog-top {
+  display: flex; align-items: baseline; justify-content: space-between;
+}
+.prog-label {
+  font-family: var(--mono); font-size: 10px; font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--muted);
+}
+.prog-pct {
+  font-family: var(--mono); font-size: 12px; font-weight: 700; color: var(--text);
+}
+.prog-pct small { font-size: 10px; font-weight: 400; color: var(--muted); margin-left: 5px; }
+.prog-segs {
+  display: flex; height: 4px; border-radius: 99px;
+  overflow: hidden; background: var(--border); gap: 1px;
+}
+.pseg {
+  height: 100%; border-radius: 99px;
+  transition: flex-basis .5s cubic-bezier(.4,0,.2,1);
+  flex: 0 0 0%;
+}
+.prog-rows { display: flex; gap: 14px; flex-wrap: nowrap; overflow: hidden; }
+.prog-row {
+  display: flex; align-items: center; gap: 5px;
+  font-family: var(--mono); font-size: 9px; color: var(--muted); white-space: nowrap;
+}
+.pdot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.prog-row b { color: var(--text); }
+.prog-row.done b { color: var(--done-text); text-decoration: line-through; }
+
+/* ── BOARD (8 columns side by side, horizontal scroll) ── */
+#board-wrap {
+  flex: 1;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 14px 20px 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  min-height: 0;
+}
+
+/* Year group: label + 2 cols */
+.year-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.year-group-cols {
+  display: flex; gap: 8px;
+}
+.year-tag {
+  font-family: var(--mono); font-size: 9px; font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--muted);
+  padding-left: 2px;
+}
+
+/* Thin separator between years */
+.year-sep {
+  width: 1px;
+  align-self: stretch;
+  background: var(--border);
+  margin: 0 2px;
+  flex-shrink: 0;
+  margin-top: 22px; /* skip past the year-tag height */
+}
+
+/* ── COLUMN ── */
+.col {
+  width: var(--col-w);
+  min-width: var(--col-w);
+  background: var(--col-bg);
+  border-radius: 10px;
+  padding: 8px 7px 7px;
+  display: flex; flex-direction: column; gap: 5px;
+  border: 2px solid transparent;
+  transition: border-color .15s, background .15s;
+  /* height = board height minus padding */
+  height: 100%;
+  max-height: 100%;
+  overflow-y: auto;
+}
+.col.drag-over {
+  border-color: var(--accent);
+  background: rgba(95,18,64,0.05);
+}
+.col-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 2px 5px; border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.col-title { font-family: var(--mono); font-size: 10px; font-weight: 700; color: var(--text); }
+.col-count { font-family: var(--mono); font-size: 9px; color: var(--muted); }
+.col-cards { display: flex; flex-direction: column; gap: 4px; flex: 1; min-height: 20px; }
+
+/* ── CARD ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--border);
+  border-radius: 7px;
+  padding: 6px 8px 5px;
+  cursor: grab;
+  user-select: none;
+  transition: box-shadow .12s, opacity .12s;
+  position: relative;
+  flex-shrink: 0;
+}
+.card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.09); }
+.card.dragging { opacity: .35; cursor: grabbing; }
+.card-code {
+  font-family: var(--mono); font-size: 10px; font-weight: 700; color: var(--text);
+}
+.card-name {
+  font-size: 10px; color: var(--muted); line-height: 1.3; margin-top: 1px;
+}
+.card-tag {
+  display: inline-block; margin-top: 4px;
+  font-family: var(--mono); font-size: 8px; font-weight: 700;
+  padding: 1px 5px; border-radius: 3px;
+}
+.card-remove {
+  position: absolute; top: 4px; right: 4px;
+  background: none; border: none; font-size: 10px; color: var(--muted);
+  cursor: pointer; opacity: 0; transition: opacity .12s, color .12s;
+  line-height: 1; padding: 1px 3px;
+}
+.card:hover .card-remove { opacity: 1; }
+.card-remove:hover { color: #c0392b; }
+
+/* card left stripe by type */
+.card[data-type="req"]      { border-left-color: var(--c-req); }
+.card[data-type="grp"]      { border-left-color: var(--c-grp); }
+.card[data-type="opt2"]     { border-left-color: var(--c-opt); }
+.card[data-type="free-opt"] { border-left-color: var(--c-optpath); }
+.card[data-type="free-comp"]{ border-left-color: var(--c-grp); }
+.card[data-type="free-non"] { border-left-color: var(--c-noncomp); }
+.card[data-type="free-gen"] { border-left-color: var(--c-free); }
+
+/* tag pills */
+.tag-req     { background: rgba(34,26,78,.08);   color: var(--c-req);     border: 1px solid rgba(34,26,78,.15);   }
+.tag-grp     { background: rgba(26,95,63,.08);   color: var(--c-grp);     border: 1px solid rgba(26,95,63,.17);   }
+.tag-opt2    { background: rgba(122,63,0,.08);   color: var(--c-opt);     border: 1px solid rgba(122,63,0,.15);   }
+.tag-free-opt  { background: rgba(26,74,107,.08);  color: var(--c-optpath); border: 1px solid rgba(26,74,107,.15);  }
+.tag-free-comp { background: rgba(26,95,63,.06);   color: var(--c-grp);     border: 1px solid rgba(26,95,63,.13);   }
+.tag-free-non  { background: rgba(107,90,62,.08);  color: var(--c-noncomp); border: 1px solid rgba(107,90,62,.14);  }
+.tag-free-gen  { background: rgba(95,18,64,.07);   color: var(--c-free);    border: 1px solid rgba(95,18,64,.13);   }
+
+/* ── ADD ELECTIVE BTN ── */
+.add-elec-btn {
+  display: flex; align-items: center; gap: 4px;
+  width: 100%; padding: 4px 5px; border-radius: 5px;
+  border: none; background: transparent;
+  font-family: var(--mono); font-size: 9px; color: var(--muted);
+  cursor: pointer; transition: background .12s, color .12s;
+  flex-shrink: 0;
+}
+.add-elec-btn:hover { background: rgba(0,0,0,0.06); color: var(--text); }
+
+/* ── ELECTIVE INLINE FORM ── */
+.elec-form {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 7px; padding: 7px; display: flex; flex-direction: column; gap: 5px;
+  flex-shrink: 0;
+}
+.elec-form input, .elec-form select {
+  font-family: var(--mono); font-size: 9px;
+  padding: 4px 6px; border: 1px solid var(--border); border-radius: 4px;
+  background: var(--bg); color: var(--text); outline: none; width: 100%;
+}
+.elec-form input { text-transform: uppercase; }
+.elec-form input::placeholder { text-transform: none; font-style: italic; }
+.elec-form input:focus, .elec-form select:focus { border-color: var(--accent); }
+.elec-form-btns { display: flex; gap: 4px; }
+.elec-form-btns button {
+  flex: 1; font-family: var(--mono); font-size: 9px; font-weight: 700;
+  padding: 4px; border-radius: 4px; border: none; cursor: pointer;
+}
+.elec-confirm { background: var(--accent); color: #fff; }
+.elec-confirm:hover { opacity: .85; }
+.elec-cancel  { background: var(--border); color: var(--text); }
+.elec-err { font-family: var(--mono); font-size: 9px; color: #c0392b; }
+
+/* ── POOL (unplaced, at bottom) ── */
+#pool-section {
+  height: var(--pool-h);
+  flex-shrink: 0;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: flex-start;
+  padding: 8px 20px;
+  gap: 10px;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+.pool-label {
+  font-family: var(--mono); font-size: 9px; font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--muted);
+  white-space: nowrap; padding-top: 3px; flex-shrink: 0;
+}
+#pool {
+  display: flex; gap: 6px; flex-wrap: wrap; align-content: flex-start;
+  flex: 1; min-height: 0;
+}
+
+/* Pool cards: compact, no name, just code + tag */
+#pool .card {
+  width: 130px; min-width: 130px;
+  padding: 5px 7px 4px;
+}
+#pool .card-name { display: none; }
+#pool .card-tag { margin-top: 3px; }
+
+/* Pool drop highlight */
+#pool-section.drag-over {
+  background: rgba(95,18,64,0.03);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #ccc8c0; border-radius: 3px; }
 </style>
 </head>
 <body>
-<div class="wrapper">
 
-  <!-- HEADER -->
-  <header>
-    <div class="eyebrow">University of Ottawa · EECS</div>
-    <h1>BSc CS — Data Science</h1>
-    <div class="subtitle">Honours Degree Tracker · 120 Units Required</div>
-  </header>
-
-  <!-- PROGRESS -->
-  <div class="progress-section">
-    <div class="progress-top">
-      <span class="progress-label">Overall Completion</span>
-      <span class="progress-count" id="progressCount">0 / 120 units</span>
-    </div>
-    <div class="progress-bar-outer">
-      <div class="progress-bar-inner" id="progressBar" style="width:0%"></div>
-    </div>
-    <div class="progress-stats" id="progressStats"></div>
+<!-- NAV -->
+<nav id="nav">
+  <span class="brand">uOttawa</span>
+  <div class="nsep"></div>
+  <span class="brand-sub">BSc CS · Data Science</span>
+  <div class="nav-sp"></div>
+  <span style="font-family:var(--mono);font-size:9px;color:var(--muted);margin-right:4px">PATH</span>
+  <div class="opt-pills">
+    <button class="opt-pill active" onclick="setOption(1)" id="optPill1">Option 1</button>
+    <button class="opt-pill"        onclick="setOption(2)" id="optPill2">Option 2 + CSI 2372</button>
   </div>
+  <div class="nsep"></div>
+  <a class="nav-link" href="https://catalogue.uottawa.ca/en/undergrad/honours-bsc-computer-science-data-science-option/#programrequirementstext" target="_blank" rel="noopener">Calendar ↗</a>
+</nav>
 
-  <!-- OPTION TOGGLE -->
-  <div class="option-toggle">
-    <h3>Elective Option Path</h3>
-    <div class="option-pills">
-      <div class="option-pill active" onclick="selectOption(1)" id="optPill1">
-        Option 1 — 6 units free electives (CEG/ELG/SEG 3000+ or CSI 4000+)
-      </div>
-      <div class="option-pill" onclick="selectOption(2)" id="optPill2">
-        Option 2 — CSI 2372 + 3 units (CEG/ELG/SEG 3000+ or CSI 4000+)
-      </div>
-    </div>
+<!-- PROGRESS -->
+<div id="prog-strip">
+  <div class="prog-top">
+    <span class="prog-label">Progress</span>
+    <span class="prog-pct" id="progPct">0%<small id="progUnits">0 / 120 units</small></span>
   </div>
-
-  <!-- ADD COURSE -->
-  <div class="add-section">
-    <h3>Mark a Course as Taken</h3>
-    <div class="add-row">
-      <input class="add-input" id="courseInput" placeholder="e.g. CSI 3105 or ELG 3155" maxlength="10" />
-      <button class="add-btn" onclick="addCourse()">+ Add Course</button>
-    </div>
-    <div class="add-hint">Type any course code. If it's not in the required list it'll count as an <span>elective</span>. Format: <span>ABC 1234</span></div>
-    <div class="error-msg" id="errorMsg"></div>
+  <div class="prog-segs">
+    <div class="pseg" id="ps-req"  style="background:#221a4e"></div>
+    <div class="pseg" id="ps-grp"  style="background:#1a5f3f"></div>
+    <div class="pseg" id="ps-opt"  style="background:#1a4a6b"></div>
+    <div class="pseg" id="ps-free" style="background:#8c7884"></div>
   </div>
+  <div class="prog-rows" id="progRows"></div>
+</div>
 
-  <!-- TABS -->
-  <div class="tabs">
-    <div class="tab active" onclick="setTab('remaining')" id="tabRemaining">Remaining</div>
-    <div class="tab" onclick="setTab('taken')" id="tabTaken">Taken (<span id="takenCount">0</span>)</div>
-    <div class="tab" onclick="setTab('all')" id="tabAll">All Courses</div>
-  </div>
+<!-- BOARD: 8 columns side by side -->
+<div id="board-wrap"></div>
 
-  <!-- LEGEND -->
-  <div class="legend">
-    <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div>Required</div>
-    <div class="legend-item"><div class="legend-dot" style="background:var(--option)"></div>Option path</div>
-    <div class="legend-item"><div class="legend-dot" style="background:var(--elective)"></div>Elective</div>
-    <div class="legend-item"><div class="legend-dot" style="background:var(--done)"></div>Completed</div>
-  </div>
-
-  <!-- CONTENT AREA -->
-  <div id="contentArea"></div>
-
+<!-- POOL -->
+<div id="pool-section">
+  <span class="pool-label">Unplaced</span>
+  <div id="pool"></div>
 </div>
 
 <script>
-// =========================================================
+// ══════════════════════════════════════════════
 // DATA
-// =========================================================
-const COURSE_REGEX = /^[A-Z]{2,4}\s\d{4}$/;
+// ══════════════════════════════════════════════
+const CODE_RE = /^[A-Z]{2,4} \d{4}$/;
 
-const REQUIRED_COURSES = [
-  { code: 'ENG 1112', name: 'Technical Report Writing',              units: 3, type: 'required' },
-  { code: 'ITI 1100', name: 'Digital Systems I',                      units: 3, type: 'required' },
-  { code: 'ITI 1120', name: 'Introduction to Computing I',            units: 3, type: 'required' },
-  { code: 'ITI 1121', name: 'Introduction to Computing II',           units: 3, type: 'required' },
-  { code: 'MAT 1320', name: 'Calculus I',                             units: 3, type: 'required' },
-  { code: 'MAT 1322', name: 'Calculus II',                            units: 3, type: 'required' },
-  { code: 'MAT 1341', name: 'Introduction to Linear Algebra',         units: 3, type: 'required' },
-  { code: 'MAT 1348', name: 'Discrete Mathematics for Computing',     units: 3, type: 'required' },
-  { code: 'CEG 2136', name: 'Computer Architecture I',                units: 3, type: 'required' },
-  { code: 'CSI 2101', name: 'Discrete Structures',                    units: 3, type: 'required' },
-  { code: 'CSI 2110', name: 'Data Structures and Algorithms',         units: 3, type: 'required' },
-  { code: 'CSI 2120', name: 'Programming Paradigms',                  units: 3, type: 'required' },
-  { code: 'CSI 2132', name: 'Databases I',                            units: 3, type: 'required' },
-  { code: 'CSI 2911', name: 'Professional Practice in Computing',     units: 3, type: 'required' },
-  { code: 'SEG 2105', name: 'Introduction to Software Engineering',   units: 3, type: 'required' },
-  { code: 'STA 2391', name: 'Probability and Statistics for Engineers', units: 3, type: 'required' },
-  { code: 'CEG 3185', name: 'Introduction to Data Comms and Networking', units: 3, type: 'required' },
-  { code: 'CSI 3104', name: 'Introduction to Formal Languages',       units: 3, type: 'required' },
-  { code: 'CSI 3105', name: 'Design and Analysis of Algorithms I',    units: 3, type: 'required' },
-  { code: 'CSI 3120', name: 'Programming Language Concepts',          units: 3, type: 'required' },
-  { code: 'CSI 3130', name: 'Databases II',                           units: 3, type: 'required' },
-  { code: 'CSI 3131', name: 'Operating Systems',                      units: 3, type: 'required' },
-  { code: 'CSI 3140', name: 'WWW Structures, Techniques and Standards', units: 3, type: 'required' },
-  { code: 'CSI 4142', name: 'Fundamentals of Data Science',           units: 3, type: 'required' },
-  { code: 'CSI 4900', name: 'Honours Project',                        units: 3, type: 'required' },
-  // CSI 4000 elective group (pick 9 units / 3 courses)
-  { code: 'CSI 4106', name: 'Introduction to Artificial Intelligence', units: 3, type: 'elective-group' },
-  { code: 'CSI 4107', name: 'Information Retrieval and the Internet',  units: 3, type: 'elective-group' },
-  { code: 'CSI 4108', name: 'Cryptography',                           units: 3, type: 'elective-group' },
-  { code: 'CSI 4139', name: 'Design of Secure Computer Systems',      units: 3, type: 'elective-group' },
-  // Option 2 specific
-  { code: 'CSI 2372', name: 'Advanced Programming Concepts with C++', units: 3, type: 'option2' },
+const COURSES = [
+  // Y1 Fall
+  { code:'ITI 1120', name:'Introduction to Computing I',              type:'req', sem:'y1f' },
+  { code:'MAT 1320', name:'Calculus I',                               type:'req', sem:'y1f' },
+  { code:'MAT 1341', name:'Introduction to Linear Algebra',           type:'req', sem:'y1f' },
+  // Y1 Winter
+  { code:'ITI 1100', name:'Digital Systems I',                        type:'req', sem:'y1w' },
+  { code:'ITI 1121', name:'Introduction to Computing II',             type:'req', sem:'y1w' },
+  { code:'MAT 1322', name:'Calculus II',                              type:'req', sem:'y1w' },
+  { code:'MAT 1348', name:'Discrete Mathematics for Computing',       type:'req', sem:'y1w' },
+  // Y2 Fall
+  { code:'CEG 2136', name:'Computer Architecture I',                  type:'req', sem:'y2f' },
+  { code:'CSI 2110', name:'Data Structures and Algorithms',           type:'req', sem:'y2f' },
+  { code:'ENG 1112', name:'Technical Report Writing',                 type:'req', sem:'y2f' },
+  { code:'SEG 2105', name:'Introduction to Software Engineering',     type:'req', sem:'y2f' },
+  // Y2 Winter
+  { code:'CSI 2101', name:'Discrete Structures',                      type:'req', sem:'y2w' },
+  { code:'CSI 2120', name:'Programming Paradigms',                    type:'req', sem:'y2w' },
+  { code:'CSI 2132', name:'Databases I',                              type:'req', sem:'y2w' },
+  { code:'MAT 2377', name:'Probability and Statistics for Engineers', type:'req', sem:'y2w' },
+  { code:'CSI 2911', name:'Professional Practice in Computing',       type:'req', sem:'y2w' },
+  // Y3 Fall
+  { code:'CSI 3105', name:'Design and Analysis of Algorithms I',      type:'req', sem:'y3f' },
+  { code:'CSI 3120', name:'Programming Language Concepts',            type:'req', sem:'y3f' },
+  { code:'CSI 3130', name:'Databases II',                             type:'req', sem:'y3f' },
+  // Y3 Winter
+  { code:'CSI 3104', name:'Introduction to Formal Languages',         type:'req', sem:'y3w' },
+  { code:'CSI 3131', name:'Operating Systems',                        type:'req', sem:'y3w' },
+  { code:'CSI 3140', name:'WWW Structures, Techniques and Standards', type:'req', sem:'y3w' },
+  { code:'CEG 3185', name:'Intro to Data Comms and Networking',       type:'req', sem:'y3w' },
+  // Y4 Fall — unplaced elective group
+  { code:'CSI 4106', name:'Introduction to Artificial Intelligence',  type:'grp', sem:'pool' },
+  { code:'CSI 4107', name:'Information Retrieval and the Internet',   type:'grp', sem:'pool' },
+  { code:'CSI 4108', name:'Cryptography',                             type:'grp', sem:'pool' },
+  { code:'CSI 4139', name:'Design of Secure Computer Systems',        type:'grp', sem:'pool' },
+  // Y4 Winter
+  { code:'CSI 4142', name:'Fundamentals of Data Science',             type:'req', sem:'y4w' },
+  { code:'CSI 4900', name:'Honours Project',                          type:'req', sem:'y4w' },
+  // Option 2 only
+  { code:'CSI 2372', name:'Advanced Programming Concepts with C++',   type:'opt2', sem:'pool' },
 ];
 
-// Option path placeholder courses (user fills these in)
-const OPTION_PLACEHOLDERS_OPT1 = [
-  { code: 'OPT 3001', name: '(Option 1) CEG/ELG/SEG 3000+ or CSI 4000+ elective', units: 3, type: 'option-slot' },
-  { code: 'OPT 3002', name: '(Option 1) CEG/ELG/SEG 3000+ or CSI 4000+ elective', units: 3, type: 'option-slot' },
+const KNOWN_CODES = new Set(COURSES.map(c => c.code));
+
+const SEMS = [
+  { id:'y1f', label:'Fall',   year:1 },
+  { id:'y1w', label:'Winter', year:1 },
+  { id:'y2f', label:'Fall',   year:2 },
+  { id:'y2w', label:'Winter', year:2 },
+  { id:'y3f', label:'Fall',   year:3 },
+  { id:'y3w', label:'Winter', year:3 },
+  { id:'y4f', label:'Fall',   year:4 },
+  { id:'y4w', label:'Winter', year:4 },
 ];
 
-const OPTION_PLACEHOLDERS_OPT2 = [
-  { code: 'OPT 3001', name: '(Option 2) CEG/ELG/SEG 3000+ or CSI 4000+ elective', units: 3, type: 'option-slot' },
-];
-
-// =========================================================
+// ══════════════════════════════════════════════
 // STATE
-// =========================================================
-let takenCodes = new Set();
-let extraElectives = []; // {code, name, units}
-let selectedOption = 1;
-let activeTab = 'remaining';
+// ══════════════════════════════════════════════
+let placements = {}; // code -> semId | 'pool'
+let extras     = []; // { code, name, type }
+let selOpt     = 1;
+let dragCode   = null;
 
-// Persist state
-function saveState() {
-  localStorage.setItem('uottawa_taken', JSON.stringify([...takenCodes]));
-  localStorage.setItem('uottawa_extras', JSON.stringify(extraElectives));
-  localStorage.setItem('uottawa_option', selectedOption);
+function save() {
+  localStorage.setItem('uo5_place',  JSON.stringify(placements));
+  localStorage.setItem('uo5_extras', JSON.stringify(extras));
+  localStorage.setItem('uo5_opt',    selOpt);
 }
-
-function loadState() {
+function load() {
   try {
-    const t = localStorage.getItem('uottawa_taken');
-    if (t) takenCodes = new Set(JSON.parse(t));
-    const e = localStorage.getItem('uottawa_extras');
-    if (e) extraElectives = JSON.parse(e);
-    const o = localStorage.getItem('uottawa_option');
-    if (o) selectedOption = parseInt(o);
+    const p = localStorage.getItem('uo5_place');  if (p) placements = JSON.parse(p);
+    const e = localStorage.getItem('uo5_extras'); if (e) extras = JSON.parse(e);
+    const o = localStorage.getItem('uo5_opt');    if (o) selOpt = +o;
   } catch {}
 }
 
-// =========================================================
-// HELPERS
-// =========================================================
+function getSem(code) {
+  if (placements[code] !== undefined) return placements[code];
+  const c = COURSES.find(x => x.code === code);
+  return c ? c.sem : 'pool';
+}
+
+function isDone(code) {
+  return getSem(code) !== 'pool';
+}
+
+// ══════════════════════════════════════════════
+// CATEGORISATION
+// ══════════════════════════════════════════════
 function getLevel(code) {
-  const m = code.match(/(\d)/);
-  return m ? parseInt(m[1]) * 1000 : 9000;
+  const m = code.match(/\d/);
+  return m ? +m[0] * 1000 : 9000;
+}
+function isOptionPath(code) {
+  const pfx = code.split(' ')[0];
+  const lvl = getLevel(code);
+  return (['CEG','ELG','SEG'].includes(pfx) && lvl === 3000) || (pfx === 'CSI' && lvl === 4000);
 }
 
-function getLevelLabel(lvl) {
-  const labels = { 1000: '1st Year', 2000: '2nd Year', 3000: '3rd Year', 4000: '4th Year' };
-  return labels[lvl] || 'Other';
+// ══════════════════════════════════════════════
+// PROGRESS
+// ══════════════════════════════════════════════
+function calcProgress() {
+  const done = COURSES.filter(c => {
+    if (c.type === 'opt2' && selOpt !== 2) return false;
+    return isDone(c.code);
+  });
+  const rd  = done.filter(c => c.type === 'req').length  * 3;
+  const gd  = done.filter(c => c.type === 'grp').length  * 3;
+  const o2d = done.filter(c => c.type === 'opt2').length * 3;
+
+  const doneEx  = extras.filter(e => isDone(e.code));
+  const optd    = doneEx.filter(e => e.type === 'free-opt').length  * 3;
+  const freed   = doneEx.filter(e => e.type !== 'free-opt').length  * 3;
+  const tot     = rd + gd + o2d + optd + freed;
+  const optNeed = selOpt === 1 ? 6 : 3;
+  return { rd, gd, o2d, optd, freed, tot, optNeed };
 }
 
-function getAllKnownCodes() {
-  return new Set(REQUIRED_COURSES.map(c => c.code));
+function renderProgress() {
+  const { rd, gd, o2d, optd, freed, tot, optNeed } = calcProgress();
+  const pct = Math.min(100, Math.round(tot / 120 * 100));
+
+  document.getElementById('progPct').childNodes[0].textContent = pct + '%';
+  document.getElementById('progUnits').textContent = ` · ${tot} / 120 units`;
+
+  const w = u => (Math.min(100, u / 120 * 100)).toFixed(2) + '%';
+  document.getElementById('ps-req').style.flexBasis  = w(rd);
+  document.getElementById('ps-grp').style.flexBasis  = w(gd + o2d);
+  document.getElementById('ps-opt').style.flexBasis  = w(optd);
+  document.getElementById('ps-free').style.flexBasis = w(freed);
+
+  const rows = [
+    { label:'Required',                  done:rd,   needed:75,      color:'#221a4e' },
+    { label:'CSI 4000 group',            done:gd,   needed:9,       color:'#1a5f3f' },
+    { label:'Option path',               done:optd, needed:optNeed, color:'#1a4a6b' },
+    { label:'Free electives',            done:freed, needed:30,     color:'#8c7884' },
+  ];
+
+  document.getElementById('progRows').innerHTML = rows.map(r => {
+    const complete = r.done >= r.needed;
+    return `<div class="prog-row${complete?' done':''}">
+      <div class="pdot" style="background:${r.color}"></div>
+      <b>${r.done}</b>/${r.needed}u ${r.label}${complete?' ✓':''}
+    </div>`;
+  }).join('');
 }
 
-function getUnitsDone() {
-  let units = 0;
-  for (const code of takenCodes) {
-    const found = REQUIRED_COURSES.find(c => c.code === code);
-    if (found) units += found.units;
-    else {
-      const extra = extraElectives.find(e => e.code === code);
-      if (extra) units += extra.units;
+// ══════════════════════════════════════════════
+// TAG HTML
+// ══════════════════════════════════════════════
+const TAG_MAP = {
+  req:        ['tag-req',      'required'],
+  grp:        ['tag-grp',      '4000 group'],
+  opt2:       ['tag-opt2',     'option 2'],
+  'free-opt': ['tag-free-opt', 'option path'],
+  'free-comp':['tag-free-comp','computing'],
+  'free-non': ['tag-free-non', 'non-computing'],
+  'free-gen': ['tag-free-gen', 'free elective'],
+};
+function tagHTML(type) {
+  const [cls, lbl] = TAG_MAP[type] || ['tag-free-gen','elective'];
+  return `<span class="card-tag ${cls}">${lbl}</span>`;
+}
+
+// ══════════════════════════════════════════════
+// CARD FACTORY
+// ══════════════════════════════════════════════
+function makeCard(code, name, type) {
+  const isExtra = !KNOWN_CODES.has(code);
+  const div = document.createElement('div');
+  div.className = 'card';
+  div.draggable = true;
+  div.dataset.code = code;
+  div.dataset.type = type;
+  div.innerHTML = `
+    <div class="card-code">${code}</div>
+    <div class="card-name">${name}</div>
+    ${tagHTML(type)}
+    ${isExtra ? `<button class="card-remove" onclick="removeExtra('${code}',event)">✕</button>` : ''}
+  `;
+  div.addEventListener('dragstart', e => {
+    dragCode = code;
+    div.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+  });
+  div.addEventListener('dragend', () => {
+    div.classList.remove('dragging');
+    document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+    dragCode = null;
+  });
+  return div;
+}
+
+// ══════════════════════════════════════════════
+// BUILD BOARD
+// ══════════════════════════════════════════════
+function buildBoard() {
+  const wrap = document.getElementById('board-wrap');
+  wrap.innerHTML = '';
+
+  const years = [1, 2, 3, 4];
+  years.forEach((yr, yi) => {
+    // Year separator (not before first)
+    if (yi > 0) {
+      const sep = document.createElement('div');
+      sep.className = 'year-sep';
+      wrap.appendChild(sep);
     }
-  }
-  return units;
+
+    const group = document.createElement('div');
+    group.className = 'year-group';
+
+    const tag = document.createElement('div');
+    tag.className = 'year-tag';
+    tag.textContent = `Year ${yr}`;
+    group.appendChild(tag);
+
+    const cols = document.createElement('div');
+    cols.className = 'year-group-cols';
+
+    SEMS.filter(s => s.year === yr).forEach(sem => {
+      const col = document.createElement('div');
+      col.className = 'col';
+      col.dataset.col = sem.id;
+
+      col.innerHTML = `
+        <div class="col-header">
+          <span class="col-title">${sem.label}</span>
+          <span class="col-count" id="cnt-${sem.id}">0</span>
+        </div>
+        <div class="col-cards" id="cards-${sem.id}"></div>
+        <button class="add-elec-btn" onclick="openElecForm('${sem.id}')">+ add elective</button>
+      `;
+
+      col.addEventListener('dragover', e => { e.preventDefault(); col.classList.add('drag-over'); });
+      col.addEventListener('dragleave', e => { if (!col.contains(e.relatedTarget)) col.classList.remove('drag-over'); });
+      col.addEventListener('drop', e => {
+        e.preventDefault(); col.classList.remove('drag-over');
+        if (!dragCode) return;
+        placements[dragCode] = sem.id;
+        save(); renderAllCards();
+      });
+
+      cols.appendChild(col);
+    });
+
+    group.appendChild(cols);
+    wrap.appendChild(group);
+  });
 }
 
-function getRequiredUnitsDone() {
-  return [...takenCodes].filter(c => {
-    const f = REQUIRED_COURSES.find(r => r.code === c);
-    return f && (f.type === 'required');
-  }).length * 3;
+// ══════════════════════════════════════════════
+// RENDER ALL CARDS
+// ══════════════════════════════════════════════
+function renderAllCards() {
+  // Clear
+  document.querySelectorAll('.col-cards').forEach(el => el.innerHTML = '');
+  document.getElementById('pool').innerHTML = '';
+
+  // Official courses
+  COURSES.forEach(c => {
+    if (c.type === 'opt2' && selOpt !== 2) return;
+    const sem = getSem(c.code);
+    const card = makeCard(c.code, c.name, c.type);
+    const target = sem === 'pool'
+      ? document.getElementById('pool')
+      : document.getElementById('cards-' + sem);
+    if (target) target.appendChild(card);
+  });
+
+  // Extras
+  extras.forEach(e => {
+    const sem = getSem(e.code);
+    const card = makeCard(e.code, e.name, e.type);
+    const target = sem === 'pool'
+      ? document.getElementById('pool')
+      : document.getElementById('cards-' + sem);
+    if (target) target.appendChild(card);
+  });
+
+  // Update counts
+  SEMS.forEach(s => {
+    const el = document.getElementById('cnt-' + s.id);
+    if (el) {
+      const cards = document.getElementById('cards-' + s.id);
+      el.textContent = cards ? cards.children.length : 0;
+    }
+  });
+
+  renderProgress();
 }
 
-function getElectiveGroupDone() {
-  return [...takenCodes].filter(c => {
-    const f = REQUIRED_COURSES.find(r => r.code === c);
-    return f && f.type === 'elective-group';
-  }).length * 3;
+// ══════════════════════════════════════════════
+// POOL DROP
+// ══════════════════════════════════════════════
+function setupPoolDrop() {
+  const ps = document.getElementById('pool-section');
+  ps.addEventListener('dragover', e => { e.preventDefault(); ps.classList.add('drag-over'); });
+  ps.addEventListener('dragleave', e => { if (!ps.contains(e.relatedTarget)) ps.classList.remove('drag-over'); });
+  ps.addEventListener('drop', e => {
+    e.preventDefault(); ps.classList.remove('drag-over');
+    if (!dragCode) return;
+    placements[dragCode] = 'pool';
+    save(); renderAllCards();
+  });
 }
 
-// =========================================================
+// ══════════════════════════════════════════════
+// ELECTIVE FORM
+// ══════════════════════════════════════════════
+function openElecForm(semId) {
+  closeElecForms();
+  const container = document.getElementById('cards-' + semId);
+  const form = document.createElement('div');
+  form.className = 'elec-form';
+  form.id = 'ef-' + semId;
+  form.innerHTML = `
+    <input  id="ef-code-${semId}" placeholder="Code e.g. ECO 1100" maxlength="10" autocomplete="off" />
+    <input  id="ef-name-${semId}" placeholder="Name (optional)" style="text-transform:none" />
+    <select id="ef-type-${semId}">
+      <option value="free-opt">Option path (CEG/ELG/SEG 3000 or CSI 4000)</option>
+      <option value="free-comp">Computing elective (CSI)</option>
+      <option value="free-non">Non-computing elective</option>
+      <option value="free-gen">Free elective</option>
+    </select>
+    <div class="elec-err" id="ef-err-${semId}"></div>
+    <div class="elec-form-btns">
+      <button class="elec-confirm" onclick="confirmElec('${semId}')">Add</button>
+      <button class="elec-cancel"  onclick="closeElecForms()">Cancel</button>
+    </div>
+  `;
+  container.appendChild(form);
+
+  const inp = document.getElementById('ef-code-' + semId);
+  inp.focus();
+  inp.addEventListener('input', () => { inp.value = inp.value.toUpperCase().replace(/[^A-Z0-9 ]/g,''); });
+  inp.addEventListener('blur', () => {
+    const raw = inp.value.trim().replace(/\s+/,' ');
+    if (CODE_RE.test(raw)) {
+      const sel = document.getElementById('ef-type-' + semId);
+      sel.value = isOptionPath(raw) ? 'free-opt' : raw.startsWith('CSI') ? 'free-comp' : 'free-non';
+    }
+  });
+  inp.addEventListener('keydown', ev => {
+    if (ev.key === 'Enter') confirmElec(semId);
+    if (ev.key === 'Escape') closeElecForms();
+  });
+}
+
+function closeElecForms() {
+  document.querySelectorAll('.elec-form').forEach(f => f.remove());
+}
+
+function confirmElec(semId) {
+  const raw  = document.getElementById('ef-code-' + semId).value.trim().toUpperCase().replace(/\s+/,' ');
+  const name = document.getElementById('ef-name-' + semId).value.trim() || 'Elective';
+  const type = document.getElementById('ef-type-' + semId).value;
+  const err  = document.getElementById('ef-err-'  + semId);
+
+  if (!CODE_RE.test(raw))                              { err.textContent = 'Format: ABC 1234'; return; }
+  if (KNOWN_CODES.has(raw) || extras.find(e=>e.code===raw)) { err.textContent = 'Already in plan'; return; }
+
+  extras.push({ code:raw, name, type });
+  placements[raw] = semId;
+  save(); closeElecForms(); renderAllCards();
+}
+
+function removeExtra(code, ev) {
+  ev.stopPropagation();
+  extras = extras.filter(e => e.code !== code);
+  delete placements[code];
+  save(); renderAllCards();
+}
+
+// ══════════════════════════════════════════════
 // OPTION TOGGLE
-// =========================================================
-function selectOption(opt) {
-  selectedOption = opt;
-  document.getElementById('optPill1').classList.toggle('active', opt === 1);
-  document.getElementById('optPill2').classList.toggle('active', opt === 2);
-  saveState();
-  render();
+// ══════════════════════════════════════════════
+function setOption(n) {
+  selOpt = n;
+  document.getElementById('optPill1').classList.toggle('active', n===1);
+  document.getElementById('optPill2').classList.toggle('active', n===2);
+  if (n === 1) placements['CSI 2372'] = 'pool';
+  save(); renderAllCards();
 }
 
-// =========================================================
-// COURSE MANAGEMENT
-// =========================================================
-function addCourse() {
-  const input = document.getElementById('courseInput');
-  const err = document.getElementById('errorMsg');
-  const raw = input.value.trim().toUpperCase().replace(/\s+/, ' ');
-
-  if (!COURSE_REGEX.test(raw)) {
-    err.textContent = 'Invalid format. Use: ABC 1234 (2–4 letters, space, 4 digits)';
-    input.classList.add('error');
-    return;
-  }
-
-  if (takenCodes.has(raw)) {
-    err.textContent = `${raw} is already marked as taken.`;
-    input.classList.add('error');
-    return;
-  }
-
-  err.textContent = '';
-  input.classList.remove('error');
-  takenCodes.add(raw);
-
-  // If not in required list, add as extra elective
-  if (!getAllKnownCodes().has(raw)) {
-    if (!extraElectives.find(e => e.code === raw)) {
-      extraElectives.push({ code: raw, name: 'Custom / Elective Course', units: 3 });
-    }
-  }
-
-  input.value = '';
-  saveState();
-  render();
-}
-
-function toggleCourse(code) {
-  if (takenCodes.has(code)) {
-    takenCodes.delete(code);
-  } else {
-    takenCodes.add(code);
-    if (!getAllKnownCodes().has(code) && !extraElectives.find(e => e.code === code)) {
-      extraElectives.push({ code, name: 'Custom / Elective Course', units: 3 });
-    }
-  }
-  saveState();
-  render();
-}
-
-function removeCourse(code, e) {
-  e.stopPropagation();
-  takenCodes.delete(code);
-  extraElectives = extraElectives.filter(x => x.code !== code);
-  saveState();
-  render();
-}
-
-// =========================================================
-// TAB MANAGEMENT
-// =========================================================
-function setTab(tab) {
-  activeTab = tab;
-  ['remaining','taken','all'].forEach(t => {
-    document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1)).classList.toggle('active', t === tab);
-  });
-  render();
-}
-
-// =========================================================
-// RENDER
-// =========================================================
-function buildCourseCard(course, showRemove = false) {
-  const taken = takenCodes.has(course.code);
-  let typeClass = '';
-  if (course.type === 'elective-group' || course.type === 'option-slot') typeClass = 'option-type';
-  if (course.type === 'elective' || course.type === 'extra') typeClass = 'elective-type';
-
-  return `
-    <div class="course-card ${taken ? 'taken' : ''} ${typeClass}" onclick="toggleCourse('${course.code}')">
-      <div class="check">${taken ? '✓' : ''}</div>
-      <div class="course-info">
-        <div class="course-code">${course.code}</div>
-        <div class="course-name" title="${course.name}">${course.name}</div>
-      </div>
-      <div class="course-units">${course.units}u</div>
-      ${showRemove ? `<button class="remove-btn" onclick="removeCourse('${course.code}', event)" title="Remove">✕</button>` : ''}
-    </div>
-  `;
-}
-
-function groupByLevel(courses) {
-  const groups = {};
-  for (const c of courses) {
-    const lvl = getLevel(c.code);
-    if (!groups[lvl]) groups[lvl] = [];
-    groups[lvl].push(c);
-  }
-  return groups;
-}
-
-function renderLevelSections(courses, showRemove = false) {
-  const groups = groupByLevel(courses);
-  const levels = Object.keys(groups).map(Number).sort();
-  if (levels.length === 0) return '<div class="empty-state">No courses to display.</div>';
-
-  return levels.map(lvl => `
-    <div class="level-section">
-      <div class="level-header">
-        <span class="level-badge">${lvl}</span>
-        <span class="level-title">${getLevelLabel(lvl)}</span>
-        <span class="level-count">${groups[lvl].length} course${groups[lvl].length !== 1 ? 's' : ''}</span>
-      </div>
-      <div class="course-grid">
-        ${groups[lvl].map(c => buildCourseCard(c, showRemove)).join('')}
-      </div>
-    </div>
-  `).join('');
-}
-
-function renderContent() {
-  const known = getAllKnownCodes();
-
-  // Build full course list
-  let allCourses = [...REQUIRED_COURSES];
-
-  // Add option-specific courses
-  if (selectedOption === 2) {
-    // CSI 2372 already in REQUIRED_COURSES with type option2
-  }
-
-  // Add extra electives
-  const extraCourses = extraElectives.map(e => ({ ...e, type: 'extra' }));
-  allCourses = [...allCourses, ...extraCourses];
-
-  // Filter out option2 course if on option 1
-  let displayCourses = allCourses.filter(c => {
-    if (c.type === 'option2' && selectedOption !== 2) return false;
-    return true;
-  });
-
-  // Elective placeholders info text
-  let electiveInfo = '';
-  const elective6Done = [...takenCodes].filter(c => {
-    const f = REQUIRED_COURSES.find(r => r.code === c);
-    if (!f) {
-      const ex = extraElectives.find(e => e.code === c);
-      return !!ex;
-    }
-    return false;
-  }).length * 3;
-
-  const nonComputingDone = 0; // user manages non-computing separately
-
-  if (activeTab === 'remaining') {
-    const remaining = displayCourses.filter(c => !takenCodes.has(c.code));
-    // Show option path summary
-    const optSummary = selectedOption === 1
-      ? `<div style="background:rgba(199,146,234,0.08);border:1px solid rgba(199,146,234,0.25);border-radius:8px;padding:12px 16px;margin-bottom:20px;font-family:var(--mono);font-size:11px;color:var(--option);">
-          <b>Option 1 Path:</b> You need 6 units of CEG/ELG/SEG 3000-level or CSI 4000-level electives. Add them using the input above and they'll count toward this.
-         </div>`
-      : `<div style="background:rgba(199,146,234,0.08);border:1px solid rgba(199,146,234,0.25);border-radius:8px;padding:12px 16px;margin-bottom:20px;font-family:var(--mono);font-size:11px;color:var(--option);">
-          <b>Option 2 Path:</b> Requires CSI 2372 + 3 units of CEG/ELG/SEG 3000-level or CSI 4000-level electives.
-         </div>`;
-    const eGroupRemaining = 9 - getElectiveGroupDone();
-    const eGroupNote = eGroupRemaining > 0
-      ? `<div style="background:rgba(79,143,255,0.07);border:1px solid rgba(79,143,255,0.2);border-radius:8px;padding:12px 16px;margin-bottom:20px;font-family:var(--mono);font-size:11px;color:var(--accent);">
-          <b>CSI 4000 Elective Group:</b> ${eGroupRemaining} units still needed (pick from CSI 4106/4107/4108/4139).
-         </div>`
-      : '';
-    const freeElectNote = `<div style="background:rgba(249,202,36,0.06);border:1px solid rgba(249,202,36,0.2);border-radius:8px;padding:12px 16px;margin-bottom:20px;font-family:var(--mono);font-size:11px;color:var(--elective);">
-        <b>Free Electives:</b> 6 units required · <b>Non-Computing Electives:</b> 24 units required (12 encouraged in data science–related areas). Track these by adding custom course codes above.
-       </div>`;
-    return optSummary + eGroupNote + freeElectNote + renderLevelSections(remaining);
-  }
-
-  if (activeTab === 'taken') {
-    const taken = displayCourses.filter(c => takenCodes.has(c.code));
-    // Also add extras not in displayCourses (shouldn't happen but safety)
-    if (taken.length === 0) return '<div class="empty-state">No courses marked as taken yet. Click any course card or type a code above.</div>';
-    return renderLevelSections(taken, true);
-  }
-
-  if (activeTab === 'all') {
-    return renderLevelSections(displayCourses);
-  }
-
-  return '';
-}
-
-function updateProgress() {
-  const done = getUnitsDone();
-  const total = 120;
-  const pct = Math.min(100, Math.round(done / total * 100));
-  document.getElementById('progressCount').textContent = `${done} / ${total} units`;
-  document.getElementById('progressBar').style.width = pct + '%';
-
-  const reqDone = getRequiredUnitsDone();
-  const eGroupDone = getElectiveGroupDone();
-  const extraDone = [...takenCodes].filter(c => !getAllKnownCodes().has(c)).length * 3;
-
-  document.getElementById('progressStats').innerHTML = `
-    <div class="stat"><div class="stat-dot" style="background:var(--accent)"></div>Required: ${reqDone} / 75u</div>
-    <div class="stat"><div class="stat-dot" style="background:var(--option)"></div>CSI 4000 Group: ${eGroupDone} / 9u</div>
-    <div class="stat"><div class="stat-dot" style="background:var(--elective)"></div>Electives tracked: ${extraDone}u</div>
-    <div class="stat"><div class="stat-dot" style="background:var(--done)"></div>${pct}% complete</div>
-  `;
-
-  const takenCount = takenCodes.size;
-  document.getElementById('takenCount').textContent = takenCount;
-}
-
-function render() {
-  document.getElementById('contentArea').innerHTML = renderContent();
-  updateProgress();
-}
-
-// =========================================================
-// KEYBOARD SHORTCUT
-// =========================================================
-document.addEventListener('keydown', e => {
-  if (e.key === 'Enter' && document.getElementById('courseInput') === document.activeElement) {
-    addCourse();
-  }
-});
-
-// Input validation feedback
-document.addEventListener('DOMContentLoaded', () => {
-  const input = document.getElementById('courseInput');
-  input.addEventListener('input', () => {
-    input.classList.remove('error');
-    document.getElementById('errorMsg').textContent = '';
-  });
-  loadState();
-  render();
-});
+// ══════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════
+load();
+document.getElementById('optPill1').classList.toggle('active', selOpt===1);
+document.getElementById('optPill2').classList.toggle('active', selOpt===2);
+buildBoard();
+setupPoolDrop();
+renderAllCards();
 </script>
 </body>
 </html>
