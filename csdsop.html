@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>uOttawa CS – Data Science Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #161921;
+    --surface2: #1e222e;
+    --border: #2a2f3f;
+    --accent: #4f8fff;
+    --accent2: #ff6b6b;
+    --accent3: #43e97b;
+    --accent4: #f9ca24;
+    --text: #e8ecf4;
+    --muted: #7a8299;
+    --done: #43e97b;
+    --todo: #4f8fff;
+    --elective: #f9ca24;
+    --option: #c792ea;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'Syne', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+  }
+
+  /* GRID NOISE BACKGROUND */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(79,143,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(79,143,255,0.03) 1px, transparent 1px);
+    background-size: 32px 32px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper {
+    position: relative;
+    z-index: 1;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+
+  /* HEADER */
+  header {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 40px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 28px;
+  }
+
+  header .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+
+  header h1 {
+    font-size: clamp(26px, 5vw, 42px);
+    font-weight: 800;
+    line-height: 1.1;
+    background: linear-gradient(135deg, var(--text) 30%, var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  header .subtitle {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  /* PROGRESS BAR */
+  .progress-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .progress-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .progress-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+  }
+
+  .progress-count {
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent);
+  }
+
+  .progress-bar-outer {
+    width: 100%;
+    height: 6px;
+    background: var(--border);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+
+  .progress-bar-inner {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent3));
+    border-radius: 99px;
+    transition: width 0.6s cubic-bezier(.4,0,.2,1);
+  }
+
+  .progress-stats {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-top: 2px;
+  }
+
+  .stat {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .stat-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  /* OPTION TOGGLE */
+  .option-toggle {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 24px;
+    margin-bottom: 28px;
+  }
+
+  .option-toggle h3 {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 14px;
+  }
+
+  .option-pills {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .option-pill {
+    cursor: pointer;
+    padding: 8px 20px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    transition: all 0.18s;
+    user-select: none;
+  }
+
+  .option-pill:hover {
+    border-color: var(--option);
+    color: var(--option);
+  }
+
+  .option-pill.active {
+    background: rgba(199,146,234,0.12);
+    border-color: var(--option);
+    color: var(--option);
+    font-weight: 600;
+  }
+
+  /* ADD COURSE AREA */
+  .add-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 36px;
+  }
+
+  .add-section h3 {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 14px;
+  }
+
+  .add-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .add-input {
+    flex: 1;
+    min-width: 180px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 14px;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text);
+    outline: none;
+    text-transform: uppercase;
+    transition: border-color 0.18s;
+  }
+
+  .add-input::placeholder { color: var(--muted); text-transform: none; }
+
+  .add-input:focus {
+    border-color: var(--accent);
+  }
+
+  .add-input.error {
+    border-color: var(--accent2);
+  }
+
+  .add-btn {
+    background: var(--accent);
+    color: #0d0f14;
+    border: none;
+    border-radius: 8px;
+    padding: 9px 20px;
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.18s, transform 0.1s;
+    white-space: nowrap;
+  }
+
+  .add-btn:hover { background: #6fa8ff; }
+  .add-btn:active { transform: scale(0.97); }
+
+  .add-hint {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 8px;
+  }
+
+  .add-hint span { color: var(--accent4); }
+
+  .error-msg {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent2);
+    margin-top: 6px;
+    min-height: 16px;
+  }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .tab {
+    padding: 10px 20px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all 0.15s;
+    user-select: none;
+  }
+
+  .tab:hover { color: var(--text); }
+  .tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  /* LEVEL SECTIONS */
+  .level-section {
+    margin-bottom: 32px;
+  }
+
+  .level-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .level-badge {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 4px;
+    background: rgba(79,143,255,0.12);
+    color: var(--accent);
+    letter-spacing: 0.08em;
+  }
+
+  .level-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 0.04em;
+  }
+
+  .level-count {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    margin-left: auto;
+  }
+
+  /* COURSE GRID */
+  .course-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 8px;
+  }
+
+  .course-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: all 0.18s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .course-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--border);
+    transition: background 0.18s;
+  }
+
+  .course-card:hover {
+    border-color: rgba(79,143,255,0.4);
+    background: var(--surface2);
+    transform: translateY(-1px);
+  }
+
+  .course-card.taken {
+    background: rgba(67,233,123,0.04);
+    border-color: rgba(67,233,123,0.2);
+  }
+
+  .course-card.taken::before { background: var(--done); }
+
+  .course-card.elective-type {
+    border-style: dashed;
+    border-color: rgba(249,202,36,0.3);
+  }
+
+  .course-card.elective-type::before { background: var(--elective); }
+  .course-card.elective-type.taken::before { background: var(--done); }
+
+  .course-card.option-type::before { background: var(--option); }
+  .course-card.option-type.taken::before { background: var(--done); }
+
+  .check {
+    width: 20px;
+    height: 20px;
+    border-radius: 5px;
+    border: 1.5px solid var(--border);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.18s;
+    font-size: 11px;
+  }
+
+  .course-card.taken .check {
+    background: var(--done);
+    border-color: var(--done);
+    color: #0d0f14;
+  }
+
+  .course-info { flex: 1; min-width: 0; }
+
+  .course-code {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 2px;
+  }
+
+  .course-card.taken .course-code { color: var(--done); }
+
+  .course-name {
+    font-size: 12px;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.3;
+  }
+
+  .course-card.taken .course-name { color: var(--muted); }
+
+  .course-units {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+
+  .remove-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 14px;
+    padding: 2px 4px;
+    border-radius: 4px;
+    opacity: 0;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+
+  .course-card:hover .remove-btn { opacity: 1; }
+  .remove-btn:hover { color: var(--accent2); background: rgba(255,107,107,0.1); }
+
+  /* TAKEN TAB SPECIFIC */
+  .taken-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; }
+
+  .empty-state {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    padding: 24px;
+    text-align: center;
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+  }
+
+  /* LEGEND */
+  .legend {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+    padding: 14px 18px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .legend-dot {
+    width: 10px; height: 10px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  /* ANIMATIONS */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .course-card { animation: fadeIn 0.2s ease both; }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- HEADER -->
+  <header>
+    <div class="eyebrow">University of Ottawa · EECS</div>
+    <h1>BSc CS — Data Science</h1>
+    <div class="subtitle">Honours Degree Tracker · 120 Units Required</div>
+  </header>
+
+  <!-- PROGRESS -->
+  <div class="progress-section">
+    <div class="progress-top">
+      <span class="progress-label">Overall Completion</span>
+      <span class="progress-count" id="progressCount">0 / 120 units</span>
+    </div>
+    <div class="progress-bar-outer">
+      <div class="progress-bar-inner" id="progressBar" style="width:0%"></div>
+    </div>
+    <div class="progress-stats" id="progressStats"></div>
+  </div>
+
+  <!-- OPTION TOGGLE -->
+  <div class="option-toggle">
+    <h3>Elective Option Path</h3>
+    <div class="option-pills">
+      <div class="option-pill active" onclick="selectOption(1)" id="optPill1">
+        Option 1 — 6 units free electives (CEG/ELG/SEG 3000+ or CSI 4000+)
+      </div>
+      <div class="option-pill" onclick="selectOption(2)" id="optPill2">
+        Option 2 — CSI 2372 + 3 units (CEG/ELG/SEG 3000+ or CSI 4000+)
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD COURSE -->
+  <div class="add-section">
+    <h3>Mark a Course as Taken</h3>
+    <div class="add-row">
+      <input class="add-input" id="courseInput" placeholder="e.g. CSI 3105 or ELG 3155" maxlength="10" />
+      <button class="add-btn" onclick="addCourse()">+ Add Course</button>
+    </div>
+    <div class="add-hint">Type any course code. If it's not in the required list it'll count as an <span>elective</span>. Format: <span>ABC 1234</span></div>
+    <div class="error-msg" id="errorMsg"></div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <div class="tab active" onclick="setTab('remaining')" id="tabRemaining">Remaining</div>
+    <div class="tab" onclick="setTab('taken')" id="tabTaken">Taken (<span id="takenCount">0</span>)</div>
+    <div class="tab" onclick="setTab('all')" id="tabAll">All Courses</div>
+  </div>
+
+  <!-- LEGEND -->
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div>Required</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--option)"></div>Option path</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--elective)"></div>Elective</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--done)"></div>Completed</div>
+  </div>
+
+  <!-- CONTENT AREA -->
+  <div id="contentArea"></div>
+
+</div>
+
+<script>
+// =========================================================
+// DATA
+// =========================================================
+const COURSE_REGEX = /^[A-Z]{2,4}\s\d{4}$/;
+
+const REQUIRED_COURSES = [
+  { code: 'ENG 1112', name: 'Technical Report Writing',              units: 3, type: 'required' },
+  { code: 'ITI 1100', name: 'Digital Systems I',                      units: 3, type: 'required' },
+  { code: 'ITI 1120', name: 'Introduction to Computing I',            units: 3, type: 'required' },
+  { code: 'ITI 1121', name: 'Introduction to Computing II',           units: 3, type: 'required' },
+  { code: 'MAT 1320', name: 'Calculus I',                             units: 3, type: 'required' },
+  { code: 'MAT 1322', name: 'Calculus II',                            units: 3, type: 'required' },
+  { code: 'MAT 1341', name: 'Introduction to Linear Algebra',         units: 3, type: 'required' },
+  { code: 'MAT 1348', name: 'Discrete Mathematics for Computing',     units: 3, type: 'required' },
+  { code: 'CEG 2136', name: 'Computer Architecture I',                units: 3, type: 'required' },
+  { code: 'CSI 2101', name: 'Discrete Structures',                    units: 3, type: 'required' },
+  { code: 'CSI 2110', name: 'Data Structures and Algorithms',         units: 3, type: 'required' },
+  { code: 'CSI 2120', name: 'Programming Paradigms',                  units: 3, type: 'required' },
+  { code: 'CSI 2132', name: 'Databases I',                            units: 3, type: 'required' },
+  { code: 'CSI 2911', name: 'Professional Practice in Computing',     units: 3, type: 'required' },
+  { code: 'SEG 2105', name: 'Introduction to Software Engineering',   units: 3, type: 'required' },
+  { code: 'STA 2391', name: 'Probability and Statistics for Engineers', units: 3, type: 'required' },
+  { code: 'CEG 3185', name: 'Introduction to Data Comms and Networking', units: 3, type: 'required' },
+  { code: 'CSI 3104', name: 'Introduction to Formal Languages',       units: 3, type: 'required' },
+  { code: 'CSI 3105', name: 'Design and Analysis of Algorithms I',    units: 3, type: 'required' },
+  { code: 'CSI 3120', name: 'Programming Language Concepts',          units: 3, type: 'required' },
+  { code: 'CSI 3130', name: 'Databases II',                           units: 3, type: 'required' },
+  { code: 'CSI 3131', name: 'Operating Systems',                      units: 3, type: 'required' },
+  { code: 'CSI 3140', name: 'WWW Structures, Techniques and Standards', units: 3, type: 'required' },
+  { code: 'CSI 4142', name: 'Fundamentals of Data Science',           units: 3, type: 'required' },
+  { code: 'CSI 4900', name: 'Honours Project',                        units: 3, type: 'required' },
+  // CSI 4000 elective group (pick 9 units / 3 courses)
+  { code: 'CSI 4106', name: 'Introduction to Artificial Intelligence', units: 3, type: 'elective-group' },
+  { code: 'CSI 4107', name: 'Information Retrieval and the Internet',  units: 3, type: 'elective-group' },
+  { code: 'CSI 4108', name: 'Cryptography',                           units: 3, type: 'elective-group' },
+  { code: 'CSI 4139', name: 'Design of Secure Computer Systems',      units: 3, type: 'elective-group' },
+  // Option 2 specific
+  { code: 'CSI 2372', name: 'Advanced Programming Concepts with C++', units: 3, type: 'option2' },
+];
+
+// Option path placeholder courses (user fills these in)
+const OPTION_PLACEHOLDERS_OPT1 = [
+  { code: 'OPT 3001', name: '(Option 1) CEG/ELG/SEG 3000+ or CSI 4000+ elective', units: 3, type: 'option-slot' },
+  { code: 'OPT 3002', name: '(Option 1) CEG/ELG/SEG 3000+ or CSI 4000+ elective', units: 3, type: 'option-slot' },
+];
+
+const OPTION_PLACEHOLDERS_OPT2 = [
+  { code: 'OPT 3001', name: '(Option 2) CEG/ELG/SEG 3000+ or CSI 4000+ elective', units: 3, type: 'option-slot' },
+];
+
+// =========================================================
+// STATE
+// =========================================================
+let takenCodes = new Set();
+let extraElectives = []; // {code, name, units}
+let selectedOption = 1;
+let activeTab = 'remaining';
+
+// Persist state
+function saveState() {
+  localStorage.setItem('uottawa_taken', JSON.stringify([...takenCodes]));
+  localStorage.setItem('uottawa_extras', JSON.stringify(extraElectives));
+  localStorage.setItem('uottawa_option', selectedOption);
+}
+
+function loadState() {
+  try {
+    const t = localStorage.getItem('uottawa_taken');
+    if (t) takenCodes = new Set(JSON.parse(t));
+    const e = localStorage.getItem('uottawa_extras');
+    if (e) extraElectives = JSON.parse(e);
+    const o = localStorage.getItem('uottawa_option');
+    if (o) selectedOption = parseInt(o);
+  } catch {}
+}
+
+// =========================================================
+// HELPERS
+// =========================================================
+function getLevel(code) {
+  const m = code.match(/(\d)/);
+  return m ? parseInt(m[1]) * 1000 : 9000;
+}
+
+function getLevelLabel(lvl) {
+  const labels = { 1000: '1st Year', 2000: '2nd Year', 3000: '3rd Year', 4000: '4th Year' };
+  return labels[lvl] || 'Other';
+}
+
+function getAllKnownCodes() {
+  return new Set(REQUIRED_COURSES.map(c => c.code));
+}
+
+function getUnitsDone() {
+  let units = 0;
+  for (const code of takenCodes) {
+    const found = REQUIRED_COURSES.find(c => c.code === code);
+    if (found) units += found.units;
+    else {
+      const extra = extraElectives.find(e => e.code === code);
+      if (extra) units += extra.units;
+    }
+  }
+  return units;
+}
+
+function getRequiredUnitsDone() {
+  return [...takenCodes].filter(c => {
+    const f = REQUIRED_COURSES.find(r => r.code === c);
+    return f && (f.type === 'required');
+  }).length * 3;
+}
+
+function getElectiveGroupDone() {
+  return [...takenCodes].filter(c => {
+    const f = REQUIRED_COURSES.find(r => r.code === c);
+    return f && f.type === 'elective-group';
+  }).length * 3;
+}
+
+// =========================================================
+// OPTION TOGGLE
+// =========================================================
+function selectOption(opt) {
+  selectedOption = opt;
+  document.getElementById('optPill1').classList.toggle('active', opt === 1);
+  document.getElementById('optPill2').classList.toggle('active', opt === 2);
+  saveState();
+  render();
+}
+
+// =========================================================
+// COURSE MANAGEMENT
+// =========================================================
+function addCourse() {
+  const input = document.getElementById('courseInput');
+  const err = document.getElementById('errorMsg');
+  const raw = input.value.trim().toUpperCase().replace(/\s+/, ' ');
+
+  if (!COURSE_REGEX.test(raw)) {
+    err.textContent = 'Invalid format. Use: ABC 1234 (2–4 letters, space, 4 digits)';
+    input.classList.add('error');
+    return;
+  }
+
+  if (takenCodes.has(raw)) {
+    err.textContent = `${raw} is already marked as taken.`;
+    input.classList.add('error');
+    return;
+  }
+
+  err.textContent = '';
+  input.classList.remove('error');
+  takenCodes.add(raw);
+
+  // If not in required list, add as extra elective
+  if (!getAllKnownCodes().has(raw)) {
+    if (!extraElectives.find(e => e.code === raw)) {
+      extraElectives.push({ code: raw, name: 'Custom / Elective Course', units: 3 });
+    }
+  }
+
+  input.value = '';
+  saveState();
+  render();
+}
+
+function toggleCourse(code) {
+  if (takenCodes.has(code)) {
+    takenCodes.delete(code);
+  } else {
+    takenCodes.add(code);
+    if (!getAllKnownCodes().has(code) && !extraElectives.find(e => e.code === code)) {
+      extraElectives.push({ code, name: 'Custom / Elective Course', units: 3 });
+    }
+  }
+  saveState();
+  render();
+}
+
+function removeCourse(code, e) {
+  e.stopPropagation();
+  takenCodes.delete(code);
+  extraElectives = extraElectives.filter(x => x.code !== code);
+  saveState();
+  render();
+}
+
+// =========================================================
+// TAB MANAGEMENT
+// =========================================================
+function setTab(tab) {
+  activeTab = tab;
+  ['remaining','taken','all'].forEach(t => {
+    document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1)).classList.toggle('active', t === tab);
+  });
+  render();
+}
+
+// =========================================================
+// RENDER
+// =========================================================
+function buildCourseCard(course, showRemove = false) {
+  const taken = takenCodes.has(course.code);
+  let typeClass = '';
+  if (course.type === 'elective-group' || course.type === 'option-slot') typeClass = 'option-type';
+  if (course.type === 'elective' || course.type === 'extra') typeClass = 'elective-type';
+
+  return `
+    <div class="course-card ${taken ? 'taken' : ''} ${typeClass}" onclick="toggleCourse('${course.code}')">
+      <div class="check">${taken ? '✓' : ''}</div>
+      <div class="course-info">
+        <div class="course-code">${course.code}</div>
+        <div class="course-name" title="${course.name}">${course.name}</div>
+      </div>
+      <div class="course-units">${course.units}u</div>
+      ${showRemove ? `<button class="remove-btn" onclick="removeCourse('${course.code}', event)" title="Remove">✕</button>` : ''}
+    </div>
+  `;
+}
+
+function groupByLevel(courses) {
+  const groups = {};
+  for (const c of courses) {
+    const lvl = getLevel(c.code);
+    if (!groups[lvl]) groups[lvl] = [];
+    groups[lvl].push(c);
+  }
+  return groups;
+}
+
+function renderLevelSections(courses, showRemove = false) {
+  const groups = groupByLevel(courses);
+  const levels = Object.keys(groups).map(Number).sort();
+  if (levels.length === 0) return '<div class="empty-state">No courses to display.</div>';
+
+  return levels.map(lvl => `
+    <div class="level-section">
+      <div class="level-header">
+        <span class="level-badge">${lvl}</span>
+        <span class="level-title">${getLevelLabel(lvl)}</span>
+        <span class="level-count">${groups[lvl].length} course${groups[lvl].length !== 1 ? 's' : ''}</span>
+      </div>
+      <div class="course-grid">
+        ${groups[lvl].map(c => buildCourseCard(c, showRemove)).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderContent() {
+  const known = getAllKnownCodes();
+
+  // Build full course list
+  let allCourses = [...REQUIRED_COURSES];
+
+  // Add option-specific courses
+  if (selectedOption === 2) {
+    // CSI 2372 already in REQUIRED_COURSES with type option2
+  }
+
+  // Add extra electives
+  const extraCourses = extraElectives.map(e => ({ ...e, type: 'extra' }));
+  allCourses = [...allCourses, ...extraCourses];
+
+  // Filter out option2 course if on option 1
+  let displayCourses = allCourses.filter(c => {
+    if (c.type === 'option2' && selectedOption !== 2) return false;
+    return true;
+  });
+
+  // Elective placeholders info text
+  let electiveInfo = '';
+  const elective6Done = [...takenCodes].filter(c => {
+    const f = REQUIRED_COURSES.find(r => r.code === c);
+    if (!f) {
+      const ex = extraElectives.find(e => e.code === c);
+      return !!ex;
+    }
+    return false;
+  }).length * 3;
+
+  const nonComputingDone = 0; // user manages non-computing separately
+
+  if (activeTab === 'remaining') {
+    const remaining = displayCourses.filter(c => !takenCodes.has(c.code));
+    // Show option path summary
+    const optSummary = selectedOption === 1
+      ? `<div style="background:rgba(199,146,234,0.08);border:1px solid rgba(199,146,234,0.25);border-radius:8px;padding:12px 16px;margin-bottom:20px;font-family:var(--mono);font-size:11px;color:var(--option);">
+          <b>Option 1 Path:</b> You need 6 units of CEG/ELG/SEG 3000-level or CSI 4000-level electives. Add them using the input above and they'll count toward this.
+         </div>`
+      : `<div style="background:rgba(199,146,234,0.08);border:1px solid rgba(199,146,234,0.25);border-radius:8px;padding:12px 16px;margin-bottom:20px;font-family:var(--mono);font-size:11px;color:var(--option);">
+          <b>Option 2 Path:</b> Requires CSI 2372 + 3 units of CEG/ELG/SEG 3000-level or CSI 4000-level electives.
+         </div>`;
+    const eGroupRemaining = 9 - getElectiveGroupDone();
+    const eGroupNote = eGroupRemaining > 0
+      ? `<div style="background:rgba(79,143,255,0.07);border:1px solid rgba(79,143,255,0.2);border-radius:8px;padding:12px 16px;margin-bottom:20px;font-family:var(--mono);font-size:11px;color:var(--accent);">
+          <b>CSI 4000 Elective Group:</b> ${eGroupRemaining} units still needed (pick from CSI 4106/4107/4108/4139).
+         </div>`
+      : '';
+    const freeElectNote = `<div style="background:rgba(249,202,36,0.06);border:1px solid rgba(249,202,36,0.2);border-radius:8px;padding:12px 16px;margin-bottom:20px;font-family:var(--mono);font-size:11px;color:var(--elective);">
+        <b>Free Electives:</b> 6 units required · <b>Non-Computing Electives:</b> 24 units required (12 encouraged in data science–related areas). Track these by adding custom course codes above.
+       </div>`;
+    return optSummary + eGroupNote + freeElectNote + renderLevelSections(remaining);
+  }
+
+  if (activeTab === 'taken') {
+    const taken = displayCourses.filter(c => takenCodes.has(c.code));
+    // Also add extras not in displayCourses (shouldn't happen but safety)
+    if (taken.length === 0) return '<div class="empty-state">No courses marked as taken yet. Click any course card or type a code above.</div>';
+    return renderLevelSections(taken, true);
+  }
+
+  if (activeTab === 'all') {
+    return renderLevelSections(displayCourses);
+  }
+
+  return '';
+}
+
+function updateProgress() {
+  const done = getUnitsDone();
+  const total = 120;
+  const pct = Math.min(100, Math.round(done / total * 100));
+  document.getElementById('progressCount').textContent = `${done} / ${total} units`;
+  document.getElementById('progressBar').style.width = pct + '%';
+
+  const reqDone = getRequiredUnitsDone();
+  const eGroupDone = getElectiveGroupDone();
+  const extraDone = [...takenCodes].filter(c => !getAllKnownCodes().has(c)).length * 3;
+
+  document.getElementById('progressStats').innerHTML = `
+    <div class="stat"><div class="stat-dot" style="background:var(--accent)"></div>Required: ${reqDone} / 75u</div>
+    <div class="stat"><div class="stat-dot" style="background:var(--option)"></div>CSI 4000 Group: ${eGroupDone} / 9u</div>
+    <div class="stat"><div class="stat-dot" style="background:var(--elective)"></div>Electives tracked: ${extraDone}u</div>
+    <div class="stat"><div class="stat-dot" style="background:var(--done)"></div>${pct}% complete</div>
+  `;
+
+  const takenCount = takenCodes.size;
+  document.getElementById('takenCount').textContent = takenCount;
+}
+
+function render() {
+  document.getElementById('contentArea').innerHTML = renderContent();
+  updateProgress();
+}
+
+// =========================================================
+// KEYBOARD SHORTCUT
+// =========================================================
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.getElementById('courseInput') === document.activeElement) {
+    addCourse();
+  }
+});
+
+// Input validation feedback
+document.addEventListener('DOMContentLoaded', () => {
+  const input = document.getElementById('courseInput');
+  input.addEventListener('input', () => {
+    input.classList.remove('error');
+    document.getElementById('errorMsg').textContent = '';
+  });
+  loadState();
+  render();
+});
+</script>
+</body>
+</html>

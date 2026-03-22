@@ -30,7 +30,7 @@
     letter-spacing: .08em;
   }
 
-  #hero h1 span { color: #7b68ee; }
+  #hero h1 span { color: #221a4e; }
 
   #hero p {
     font-size: 14px;
@@ -68,12 +68,6 @@
     box-shadow: 0 6px 20px rgba(0,0,0,0.1);
   }
 
-  .dept-card .dot {
-    width: 36px; height: 36px;
-    border-radius: 50%;
-    opacity: .85;
-  }
-
   .dept-card .label {
     font-family: 'Space Mono', monospace;
     font-size: 15px;
@@ -83,7 +77,7 @@
 
   .dept-card .sublabel {
     font-size: 11px;
-    color: #8c8578;
+    color: #8c7884;
     font-family: 'Space Mono', monospace;
   }
 
@@ -99,14 +93,13 @@
 
 <div id="hero">
   <h1>uOttawa Course Map</h1>
-  <p>Click any department below to explore its courses, prerequisites, and what each class unlocks.</p>
 
   <div class="card-row" id="cards"></div>
 </div>
 
 <script src="nav.js"></script>
 <script>
-  buildNav(null); // no active tab — this is the home page
+  buildNav(null);
 
   // Build cards from the same PAGES array nav.js defines
   const row = document.getElementById('cards');
@@ -128,5 +121,6 @@
     row.appendChild(a);
   });
 </script>
+
 </body>
 </html>

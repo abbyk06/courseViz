@@ -1,19 +1,9 @@
-/**
- * nav.js — shared navigation bar for the uOttawa Course Map
- *
- * Usage: include this script in any page and call  buildNav('mat')
- * The argument is the key of the currently active page.
- *
- * To add a new department, just add an entry to PAGES below.
- */
-
 const PAGES = [
   {
     key:   'mat',
     label: 'MAT',
     title: 'Mathematics',
     href:  'mat.html',
-    dot:   '#8878e0',   // lavender
     ready: true,
   },
   {
@@ -21,12 +11,11 @@ const PAGES = [
     label: 'CSI',
     title: 'Computer Science',
     href:  'csi.html',
-    dot:   '#58b0e0',   // sky blue
     ready: true,
   },
-  // ── add more departments here ────────────────────────────────────────────
-  // { key:'phy', label:'PHY', title:'Physics',   href:'phy.html', dot:'#e0a858', ready:false },
-  // { key:'sta', label:'STA', title:'Statistics', href:'sta.html', dot:'#60c878', ready:false },
+  {
+    
+  },
 ];
 
 function buildNav(activePage) {
@@ -52,14 +41,8 @@ function buildNav(activePage) {
     a.href  = page.ready ? page.href : '#';
     a.title = page.title;
 
-    const dot = document.createElement('span');
-    dot.className = 'dot';
-    dot.style.background = page.dot;
-
     const label = document.createElement('span');
     label.textContent = page.label;
-
-    a.appendChild(dot);
     a.appendChild(label);
 
     if (!page.ready) {
