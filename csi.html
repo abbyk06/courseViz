@@ -33,7 +33,10 @@
 </div>
 
 
-<div id="canvas-stage"><canvas id="cv"></canvas></div>
+<div id="canvas-stage">
+  <canvas id="cv"></canvas>
+  <button type="button" id="recenter-view" class="map-control-btn" aria-label="Recenter map in view">Recenter</button>
+</div>
 
 <script src="nav.js"></script>
 
@@ -227,8 +230,9 @@ const CANVAS_W = 1100;
 const maxN = Math.max(...Object.values(byLevel).map(a=>a.length));
 const CANVAS_H = PAD*2 + maxN*V_GAP + 20;
 
+const DEFAULT_MAP_SCALE = 1.02;
 let sel = null;
-let transform = { x:0, y:0, scale:1.02 };
+let transform = { x:0, y:0, scale:DEFAULT_MAP_SCALE };
 let isDragging = false, dragStart = {}, panStart = {};
 const DPR_CAP = 2;
 let lastCanvasBuf = { w: 0, h: 0 };
@@ -315,10 +319,10 @@ function render() {
       ctx.beginPath();
       ctx.moveTo(p1.x+NODE_W/2,p1.y);
       ctx.bezierCurveTo(mx,p1.y,mx,p2.y,p2.x-NODE_W/2,p2.y);
-      if(isPreH){ ctx.strokeStyle='#e85d7a'; ctx.lineWidth=2.5; ctx.shadowColor='#e85d7a'; ctx.shadowBlur=8; }
-      else if(isUnH){ ctx.strokeStyle='#3db891'; ctx.lineWidth=2.5; ctx.shadowColor='#3db891'; ctx.shadowBlur=8; }
-      else { ctx.strokeStyle='#bbb4c8'; ctx.lineWidth=1; ctx.shadowBlur=0; }
-      ctx.stroke(); ctx.shadowBlur=0;
+      if(isPreH){ ctx.strokeStyle='#e85d7a'; ctx.lineWidth=2.5; }
+      else if(isUnH){ ctx.strokeStyle='#3db891'; ctx.lineWidth=2.5; }
+      else { ctx.strokeStyle='#bbb4c8'; ctx.lineWidth=1; }
+      ctx.stroke();
     }
   }
   ctx.globalAlpha=1;
@@ -329,15 +333,11 @@ function render() {
     const nx=pos.x-NODE_W/2, ny=pos.y-NODE_H/2, lv=d.level;
     const isSel=code===sel, isPre=prereqSet.has(code), isUnl=unlockSet.has(code);
     ctx.globalAlpha=sel&&!isSel&&!isPre&&!isUnl?0.25:1;
-    if(isSel)      {ctx.shadowColor='rgba(212,150,10,0.35)'; ctx.shadowBlur=10;}
-    else if(isPre) {ctx.shadowColor='rgba(232,93,122,0.28)'; ctx.shadowBlur=8;}
-    else if(isUnl) {ctx.shadowColor='rgba(61,184,145,0.26)'; ctx.shadowBlur=8;}
-    else           {ctx.shadowColor='rgba(0,0,0,0.07)';      ctx.shadowBlur=3; }
     drawRR(nx,ny,NODE_W,NODE_H,NODE_R);
     ctx.fillStyle=isSel?'#fff8e0':isPre?'#ffedf0':isUnl?'#e6faf4':LV[lv].nodeFill; ctx.fill();
     ctx.lineWidth=isSel||isPre||isUnl?1.8:1;
     ctx.strokeStyle=isSel?'#d4960a':isPre?'#e85d7a':isUnl?'#3db891':LV[lv].nodeBorder;
-    drawRR(nx,ny,NODE_W,NODE_H,NODE_R); ctx.stroke(); ctx.shadowBlur=0;
+    drawRR(nx,ny,NODE_W,NODE_H,NODE_R); ctx.stroke();
     ctx.font='700 10px "Space Mono",monospace'; ctx.textAlign='center';
     ctx.fillStyle=isSel?'#b07808':isPre?'#c03058':isUnl?'#1a7a60':LV[lv].codeColor;
     ctx.fillText(code,pos.x,pos.y-5);
@@ -426,6 +426,13 @@ function clearSelection(){
   requestAnimationFrame(render);
 }
 
+function recenterView(){
+  transform.scale = DEFAULT_MAP_SCALE;
+  transform.x = (window.innerWidth - CANVAS_W * transform.scale) / 2;
+  transform.y = 8;
+  requestAnimationFrame(render);
+}
+
 function setupCourseSearch(){
   const nav=document.getElementById('nav');
   const hint=nav.querySelector('.hint-text');
@@ -497,6 +504,7 @@ window.addEventListener('resize',()=>{
 // ── Boot ──────────────────────────────────────────────────────────────────────
 buildNav('csi');
 setupCourseSearch();
+document.getElementById('recenter-view').addEventListener('click',()=>recenterView());
 transform.x = (window.innerWidth - CANVAS_W*transform.scale) / 2;
 transform.y = 8;
 requestAnimationFrame(render);
