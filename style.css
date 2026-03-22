@@ -226,30 +226,6 @@ body {
   z-index: 1;
 }
 
-.map-control-btn {
-  position: absolute;
-  bottom: 20px;
-  right: 20px;
-  z-index: 2;
-  font-family: 'Space Mono', monospace;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  padding: 8px 12px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: var(--legend-bg);
-  color: var(--muted);
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
-}
-.map-control-btn:hover {
-  background: rgba(255, 255, 255, 0.95);
-  color: var(--text);
-  border-color: var(--muted);
-}
-
 /* ── CANVAS ───────────────────────────────────────────────────────────────── */
 #cv {
   display: block;
